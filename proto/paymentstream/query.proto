@@ -25,7 +25,7 @@ message QueryAllPaymentStreamRequest {
 message QueryAllPaymentStreamResponse {
   repeated PaymentStream                 payment_streams = 1 [
     (gogoproto.nullable) = false,
-    (gogoproto.moretags) = "yaml:\"total_amount\""
+    (gogoproto.moretags) = "yaml:\"payment_streams\""
   ];
   cosmos.base.query.v1beta1.PageResponse pagination      = 2;
 }

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (k Keeper) PaymentstreamAll(c context.Context, req *types.QueryAllPaymentStreamRequest) (*types.QueryAllPaymentStreamResponse, error) {
+func (k Keeper) PaymentStreamsAll(c context.Context, req *types.QueryAllPaymentStreamRequest) (*types.QueryAllPaymentStreamResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}

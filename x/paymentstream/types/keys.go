@@ -18,7 +18,8 @@ const (
 )
 
 var (
-	PrefixPaymentStreamId = []byte{0x01}
+	PrefixPaymentStreamId    = []byte{0x01}
+	PrefixPaymentStreamCount = []byte{0x02}
 )
 
 func KeyPrefix(p string) []byte {

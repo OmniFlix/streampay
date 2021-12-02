@@ -14,12 +14,13 @@ var (
 	_ sdk.Msg = &MsgStreamSend{}
 )
 
-func NewMsgStreamSend(sender, recipient string, amount sdk.Coin, endTime time.Time) *MsgStreamSend {
+func NewMsgStreamSend(sender, recipient string, amount sdk.Coin, _type PaymentType, endTime time.Time) *MsgStreamSend {
 	return &MsgStreamSend{
-		Sender:    sender,
-		Recipient: recipient,
-		Amount:    amount,
-		EndTime:   endTime,
+		Sender:     sender,
+		Recipient:  recipient,
+		Amount:     amount,
+		StreamType: _type,
+		EndTime:    endTime,
 	}
 }
 

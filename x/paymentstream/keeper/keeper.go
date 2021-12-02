@@ -40,3 +40,17 @@ func NewKeeper(
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
+
+func (k Keeper) StartPaymentStream(ctx sdk.Context, payment types.PaymentStream) {
+
+	pNum := k.GetNextPaymentStreamNumber(ctx)
+
+	payment.Id = "payment" + fmt.Sprint(pNum)
+	payment.LockHeight = ctx.BlockHeight()
+	payment.StartTime = ctx.BlockTime()
+	payment.TotalTransferred = sdk.NewCoin(payment.TotalAmount.Denom, sdk.NewInt(0))
+	payment.Status = types.StatusOpen
+
+	k.SetPaymentStream(ctx, payment)
+	k.SetNextPaymentStreamNumber(ctx, pNum+1)
+}

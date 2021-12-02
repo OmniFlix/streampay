@@ -6,6 +6,8 @@ import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
 
+import "paymentstream/paymentstream.proto";
+
 option go_package = "github.com/OmniFlix/payment-stream/x/paymentstream/types";
 
 // Msg defines the Msg service.
@@ -16,22 +18,18 @@ service Msg {
 
 
 message MsgStreamSend {
-  string                    sender     = 1;
-  string                    recipient  = 2;
-  cosmos.base.v1beta1.Coin  amount     = 3 [
+  string                    sender      = 1;
+  string                    recipient   = 2;
+  cosmos.base.v1beta1.Coin  amount      = 3 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  google.protobuf.Timestamp start_time = 4 [
-    (gogoproto.nullable) = false,
-    (gogoproto.stdtime)  = true,
-    (gogoproto.moretags) = "yaml:\"start_time\""
-  ];
-  google.protobuf.Timestamp end_time   = 5 [
+  google.protobuf.Timestamp end_time    = 4 [
     (gogoproto.nullable) = false,
     (gogoproto.stdtime)  = true,
     (gogoproto.moretags) = "yaml:\"end_time\""
   ];
+  PaymentType               stream_type = 5 [(gogoproto.moretags) = "yaml:\"stream_type\""];
 }
 message MsgStreamSendResponse {
 }
