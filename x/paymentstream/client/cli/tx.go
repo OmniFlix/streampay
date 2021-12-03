@@ -69,6 +69,9 @@ func GetCmdStreamSend() *cobra.Command {
 				return err
 			}
 			etm := time.Unix(endTimestamp, 0)
+			if etm.Unix() <= time.Now().Unix() {
+				return fmt.Errorf("endtime should be in future")
+			}
 			delayed, err := cmd.Flags().GetBool(FlagDelayed)
 			if err != nil {
 				return err

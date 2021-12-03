@@ -12,14 +12,14 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 	var (
 		log = k.Logger(ctx)
 	)
-	log.Info("Staring payments iteration", "log")
+	log.Info("Starting active payments iteration", "log")
 
 	paymentStreams := k.GetAllPaymentStreams(ctx)
 	for _, ps := range paymentStreams {
-		log.Info("Payment ID", ps.Id, ps.Status.String())
 		if ps.GetStatus() != types.StatusOpen {
 			continue
 		}
+		log.Info(fmt.Sprintf("paymentId: %s, type: %s, status: %s", ps.Id, ps.StreamType.String(), ps.Status.String()))
 		if ps.GetStreamType() == types.TypeDelayed {
 			if ps.EndTime.Unix() > ctx.BlockTime().Unix() {
 				recipient, err := sdk.AccAddressFromBech32(ps.Recipient)
@@ -53,10 +53,13 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 			nowTime := ctx.BlockTime().Unix()
 			startTime := ps.StartTime.Unix()
 			endTime := ps.EndTime.Unix()
+			if nowTime >= endTime {
+				nowTime = endTime
+			}
 			totalAmount := ps.TotalAmount.Amount.Int64()
-			log.Info(fmt.Sprintf("Total amount %d now Time %d , startTome %d, endTime %d", totalAmount, nowTime, startTime, endTime))
-			unlockedAmount := float64(totalAmount) * float64((nowTime - startTime)) / float64(endTime-startTime)
-			log.Info(fmt.Sprintf("unlocked amount %f", unlockedAmount))
+			percentage := float64(nowTime-startTime) / float64(endTime-startTime)
+			unlockedAmount := float64(totalAmount) * percentage
+			log.Info(fmt.Sprintf("total unlocked amount %f", unlockedAmount))
 			amountTosend := int64(unlockedAmount) - ps.TotalTransferred.Amount.Int64()
 			amount := sdk.NewCoin(ps.TotalAmount.Denom, sdk.NewInt(amountTosend))
 			log.Info(fmt.Sprintf("Transferring amount %s to %s", amount.String(), recipient.String()))
@@ -64,10 +67,7 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 			if err != nil {
 				panic(err)
 			}
-			log.Info("Transferred")
-			log.Info(fmt.Sprintf("Total Transferred before transfer %s", ps.TotalTransferred.String()))
 			ps.TotalTransferred = ps.TotalTransferred.Add(amount)
-			log.Info(fmt.Sprintf("Total Transferred after transfer %s", ps.TotalTransferred.String()))
 			ps.LastTransferredAt = ctx.BlockTime()
 			if ps.TotalTransferred.IsGTE(ps.TotalAmount) {
 				log.Info("updating status")
