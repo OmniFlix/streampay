@@ -12574,27 +12574,82 @@ paths:
                         }
       tags:
         - Query
-  /OmniFlix/paymentstream/paymentstream/paymentstream:
+  /all-streaming-payments:
     get:
-      summary: Queries a list of paymentstream items.
-      operationId: OmniFlixPaymentstreamPaymentstreamPaymentstreamAll
+      operationId: OmniFlixPaymentstreamPaymentstreamPaymentStreamsAll
       responses:
         '200':
           description: A successful response.
           schema:
             type: object
             properties:
-              paymentstream:
+              paymentStreams:
                 type: array
                 items:
                   type: object
                   properties:
-                    index:
+                    id:
                       type: string
-                    from:
+                    sender:
                       type: string
-                    to:
+                    recipient:
                       type: string
+                    totalAmount:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    streamType:
+                      type: string
+                      enum:
+                        - PAYMENT_TYPE_DELAYED
+                        - PAYMENT_TYPE_CONTINUOUS
+                        - PAYMENT_TYPE_PERIODIC
+                      default: PAYMENT_TYPE_DELAYED
+                    status:
+                      type: string
+                      enum:
+                        - PAYMENT_STATUS_OPEN
+                        - PAYMENT_STATUS_COMPLETED
+                        - PAYMENT_STATUS_CANCELLED
+                      default: PAYMENT_STATUS_OPEN
+                    lockHeight:
+                      type: string
+                      format: int64
+                    startTime:
+                      type: string
+                      format: date-time
+                    endTime:
+                      type: string
+                      format: date-time
+                    totalTransferred:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    lastTransferredAt:
+                      type: string
+                      format: date-time
               pagination:
                 type: object
                 properties:
@@ -12612,16 +12667,16 @@ paths:
                       PageRequest.count_total
 
                       was set, its value is undefined otherwise
-                description: >-
-                  PageResponse is to be embedded in gRPC response messages where
-                  the
-
-                  corresponding request message has used PageRequest.
-
-                   message SomeResponse {
+                description: |-
+                  message SomeResponse {
                            repeated Bar results = 1;
                            PageResponse page = 2;
                    }
+                title: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the corresponding
+
+                  request message has used PageRequest
         default:
           description: An unexpected error response.
           schema:
@@ -12678,46 +12733,118 @@ paths:
             include
 
             a count of the total number of items available for pagination in
-            UIs.
+            UIs. count_total
 
-            count_total is only respected when offset is used. It is ignored
-            when key
-
-            is set.
-          in: query
-          required: false
-          type: boolean
-        - name: pagination.reverse
-          description: >-
-            reverse is set to true if results are to be returned in the
-            descending order.
-
-
-            Since: cosmos-sdk 0.43
+            is only respected when offset is used. It is ignored when key is
+            set.
           in: query
           required: false
           type: boolean
       tags:
         - Query
-  '/OmniFlix/paymentstream/paymentstream/paymentstream/{index}':
+  '/payment-in-streams/{recipient}':
     get:
-      summary: Queries a paymentstream by index.
-      operationId: OmniFlixPaymentstreamPaymentstreamPaymentstream
+      operationId: OmniFlixPaymentstreamPaymentstreamRecipientPaymentStreams
       responses:
         '200':
           description: A successful response.
           schema:
             type: object
             properties:
-              paymentstream:
+              paymentStreams:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    sender:
+                      type: string
+                    recipient:
+                      type: string
+                    totalAmount:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    streamType:
+                      type: string
+                      enum:
+                        - PAYMENT_TYPE_DELAYED
+                        - PAYMENT_TYPE_CONTINUOUS
+                        - PAYMENT_TYPE_PERIODIC
+                      default: PAYMENT_TYPE_DELAYED
+                    status:
+                      type: string
+                      enum:
+                        - PAYMENT_STATUS_OPEN
+                        - PAYMENT_STATUS_COMPLETED
+                        - PAYMENT_STATUS_CANCELLED
+                      default: PAYMENT_STATUS_OPEN
+                    lockHeight:
+                      type: string
+                      format: int64
+                    startTime:
+                      type: string
+                      format: date-time
+                    endTime:
+                      type: string
+                      format: date-time
+                    totalTransferred:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    lastTransferredAt:
+                      type: string
+                      format: date-time
+              pagination:
                 type: object
                 properties:
-                  index:
+                  nextKey:
                     type: string
-                  from:
+                    format: byte
+                    title: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently
+                  total:
                     type: string
-                  to:
-                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: |-
+                  message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+                title: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the corresponding
+
+                  request message has used PageRequest
         default:
           description: An unexpected error response.
           schema:
@@ -12737,10 +12864,398 @@ paths:
                       type: string
                   additionalProperties: {}
       parameters:
-        - name: index
+        - name: recipient
           in: path
           required: true
           type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.countTotal
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs. count_total
+
+            is only respected when offset is used. It is ignored when key is
+            set.
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  '/payment-out-streams/{sender}':
+    get:
+      operationId: OmniFlixPaymentstreamPaymentstreamSenderPaymentStreams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              paymentStreams:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    sender:
+                      type: string
+                    recipient:
+                      type: string
+                    totalAmount:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    streamType:
+                      type: string
+                      enum:
+                        - PAYMENT_TYPE_DELAYED
+                        - PAYMENT_TYPE_CONTINUOUS
+                        - PAYMENT_TYPE_PERIODIC
+                      default: PAYMENT_TYPE_DELAYED
+                    status:
+                      type: string
+                      enum:
+                        - PAYMENT_STATUS_OPEN
+                        - PAYMENT_STATUS_COMPLETED
+                        - PAYMENT_STATUS_CANCELLED
+                      default: PAYMENT_STATUS_OPEN
+                    lockHeight:
+                      type: string
+                      format: int64
+                    startTime:
+                      type: string
+                      format: date-time
+                    endTime:
+                      type: string
+                      format: date-time
+                    totalTransferred:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    lastTransferredAt:
+                      type: string
+                      format: date-time
+              pagination:
+                type: object
+                properties:
+                  nextKey:
+                    type: string
+                    format: byte
+                    title: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: |-
+                  message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+                title: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the corresponding
+
+                  request message has used PageRequest
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: sender
+          in: path
+          required: true
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.countTotal
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs. count_total
+
+            is only respected when offset is used. It is ignored when key is
+            set.
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  /streaming-payments:
+    get:
+      operationId: OmniFlixPaymentstreamPaymentstreamPaymentStreams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              paymentStreams:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    sender:
+                      type: string
+                    recipient:
+                      type: string
+                    totalAmount:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    streamType:
+                      type: string
+                      enum:
+                        - PAYMENT_TYPE_DELAYED
+                        - PAYMENT_TYPE_CONTINUOUS
+                        - PAYMENT_TYPE_PERIODIC
+                      default: PAYMENT_TYPE_DELAYED
+                    status:
+                      type: string
+                      enum:
+                        - PAYMENT_STATUS_OPEN
+                        - PAYMENT_STATUS_COMPLETED
+                        - PAYMENT_STATUS_CANCELLED
+                      default: PAYMENT_STATUS_OPEN
+                    lockHeight:
+                      type: string
+                      format: int64
+                    startTime:
+                      type: string
+                      format: date-time
+                    endTime:
+                      type: string
+                      format: date-time
+                    totalTransferred:
+                      type: object
+                      properties:
+                        denom:
+                          type: string
+                        amount:
+                          type: string
+                      description: >-
+                        Coin defines a token with a denomination and an amount.
+
+
+                        NOTE: The amount field is an Int which implements the
+                        custom method
+
+                        signatures required by gogoproto.
+                    lastTransferredAt:
+                      type: string
+                      format: date-time
+              pagination:
+                type: object
+                properties:
+                  nextKey:
+                    type: string
+                    format: byte
+                    title: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: |-
+                  message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+                title: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the corresponding
+
+                  request message has used PageRequest
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: status
+          in: query
+          required: false
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.countTotal
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs. count_total
+
+            is only respected when offset is used. It is ignored when key is
+            set.
+          in: query
+          required: false
+          type: boolean
       tags:
         - Query
 definitions:
@@ -13204,6 +13719,11 @@ definitions:
                repeated Bar results = 1;
                PageResponse page = 2;
        }
+    title: >-
+      PageResponse is to be embedded in gRPC response messages where the
+      corresponding
+
+      request message has used PageRequest
   google.protobuf.Any:
     type: object
     properties:
@@ -20093,31 +20613,151 @@ definitions:
       and
 
       freezing clients
-  OmniFlix.paymentstream.paymentstream.MsgCreatePaymentStreamResponse:
+  OmniFlix.paymentstream.paymentstream.MsgStreamSendResponse:
     type: object
-  OmniFlix.paymentstream.paymentstream.Paymentstream:
-    type: object
-    properties:
-      index:
-        type: string
-      from:
-        type: string
-      to:
-        type: string
-  OmniFlix.paymentstream.paymentstream.QueryAllPaymentstreamResponse:
+  OmniFlix.paymentstream.paymentstream.PaymentStatus:
+    type: string
+    enum:
+      - PAYMENT_STATUS_OPEN
+      - PAYMENT_STATUS_COMPLETED
+      - PAYMENT_STATUS_CANCELLED
+    default: PAYMENT_STATUS_OPEN
+  OmniFlix.paymentstream.paymentstream.PaymentStream:
     type: object
     properties:
-      paymentstream:
+      id:
+        type: string
+      sender:
+        type: string
+      recipient:
+        type: string
+      totalAmount:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      streamType:
+        type: string
+        enum:
+          - PAYMENT_TYPE_DELAYED
+          - PAYMENT_TYPE_CONTINUOUS
+          - PAYMENT_TYPE_PERIODIC
+        default: PAYMENT_TYPE_DELAYED
+      status:
+        type: string
+        enum:
+          - PAYMENT_STATUS_OPEN
+          - PAYMENT_STATUS_COMPLETED
+          - PAYMENT_STATUS_CANCELLED
+        default: PAYMENT_STATUS_OPEN
+      lockHeight:
+        type: string
+        format: int64
+      startTime:
+        type: string
+        format: date-time
+      endTime:
+        type: string
+        format: date-time
+      totalTransferred:
+        type: object
+        properties:
+          denom:
+            type: string
+          amount:
+            type: string
+        description: |-
+          Coin defines a token with a denomination and an amount.
+
+          NOTE: The amount field is an Int which implements the custom method
+          signatures required by gogoproto.
+      lastTransferredAt:
+        type: string
+        format: date-time
+  OmniFlix.paymentstream.paymentstream.PaymentType:
+    type: string
+    enum:
+      - PAYMENT_TYPE_DELAYED
+      - PAYMENT_TYPE_CONTINUOUS
+      - PAYMENT_TYPE_PERIODIC
+    default: PAYMENT_TYPE_DELAYED
+  OmniFlix.paymentstream.paymentstream.QueryAllPaymentStreamResponse:
+    type: object
+    properties:
+      paymentStreams:
         type: array
         items:
           type: object
           properties:
-            index:
+            id:
               type: string
-            from:
+            sender:
               type: string
-            to:
+            recipient:
               type: string
+            totalAmount:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            streamType:
+              type: string
+              enum:
+                - PAYMENT_TYPE_DELAYED
+                - PAYMENT_TYPE_CONTINUOUS
+                - PAYMENT_TYPE_PERIODIC
+              default: PAYMENT_TYPE_DELAYED
+            status:
+              type: string
+              enum:
+                - PAYMENT_STATUS_OPEN
+                - PAYMENT_STATUS_COMPLETED
+                - PAYMENT_STATUS_CANCELLED
+              default: PAYMENT_STATUS_OPEN
+            lockHeight:
+              type: string
+              format: int64
+            startTime:
+              type: string
+              format: date-time
+            endTime:
+              type: string
+              format: date-time
+            totalTransferred:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            lastTransferredAt:
+              type: string
+              format: date-time
       pagination:
         type: object
         properties:
@@ -20136,22 +20776,109 @@ definitions:
 
               was set, its value is undefined otherwise
         description: |-
-          PageResponse is to be embedded in gRPC response messages where the
-          corresponding request message has used PageRequest.
-
-           message SomeResponse {
+          message SomeResponse {
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
-  OmniFlix.paymentstream.paymentstream.QueryGetPaymentstreamResponse:
+        title: >-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding
+
+          request message has used PageRequest
+  OmniFlix.paymentstream.paymentstream.QueryPaymentStreamsResponse:
     type: object
     properties:
-      paymentstream:
+      paymentStreams:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            sender:
+              type: string
+            recipient:
+              type: string
+            totalAmount:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            streamType:
+              type: string
+              enum:
+                - PAYMENT_TYPE_DELAYED
+                - PAYMENT_TYPE_CONTINUOUS
+                - PAYMENT_TYPE_PERIODIC
+              default: PAYMENT_TYPE_DELAYED
+            status:
+              type: string
+              enum:
+                - PAYMENT_STATUS_OPEN
+                - PAYMENT_STATUS_COMPLETED
+                - PAYMENT_STATUS_CANCELLED
+              default: PAYMENT_STATUS_OPEN
+            lockHeight:
+              type: string
+              format: int64
+            startTime:
+              type: string
+              format: date-time
+            endTime:
+              type: string
+              format: date-time
+            totalTransferred:
+              type: object
+              properties:
+                denom:
+                  type: string
+                amount:
+                  type: string
+              description: >-
+                Coin defines a token with a denomination and an amount.
+
+
+                NOTE: The amount field is an Int which implements the custom
+                method
+
+                signatures required by gogoproto.
+            lastTransferredAt:
+              type: string
+              format: date-time
+      pagination:
         type: object
         properties:
-          index:
+          nextKey:
             type: string
-          from:
+            format: byte
+            title: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently
+          total:
             type: string
-          to:
-            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+        title: >-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding
+
+          request message has used PageRequest

@@ -6,11 +6,13 @@ accounts:
 validator:
   name: alice
   staked: "100000000stake"
-client:
-  openapi:
-    path: "docs/static/openapi.yml"
-  vuex:
-    path: "vue/src/store"
+init:
+  client:
+    keyring-backend: "test"
 faucet:
   name: bob
   coins: ["5token", "100000stake"]
+build:
+  binary: "spd"
+genesis:
+  chain_id: "paymentstream"
