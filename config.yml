@@ -9,6 +9,9 @@ validator:
 init:
   client:
     keyring-backend: "test"
+client:
+  openapi:
+    path: "docs/static/openapi.yml"
 faucet:
   name: bob
   coins: ["5token", "100000stake"]
