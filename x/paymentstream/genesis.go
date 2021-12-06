@@ -24,6 +24,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 
 	genesis.PaymentStreamsList = k.GetAllPaymentStreams(ctx)
+	genesis.NextPaymentStreamCount = k.GetNextPaymentStreamNumber(ctx)
 	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis
