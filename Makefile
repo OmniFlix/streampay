@@ -56,7 +56,7 @@ lint:
 	@golangci-lint run
 	@go mod verify
 
-start-test-chain:
+reset-and-start-test-chain:
 	rm -rf ~/.payment-stream/config/*
 	payment-streamd unsafe-reset-all
 	payment-streamd init sp-node  --chain-id "sp-test-1"

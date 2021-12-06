@@ -45,7 +45,7 @@ func (k Keeper) StartPaymentStream(ctx sdk.Context, payment types.PaymentStream)
 
 	pNum := k.GetNextPaymentStreamNumber(ctx)
 
-	payment.Id = "payment" + fmt.Sprint(pNum)
+	payment.Id = types.PaymentStreamPrefix + fmt.Sprint(pNum)
 	payment.LockHeight = ctx.BlockHeight()
 	payment.StartTime = ctx.BlockTime()
 	payment.TotalTransferred = sdk.NewCoin(payment.TotalAmount.Denom, sdk.NewInt(0))
@@ -53,4 +53,7 @@ func (k Keeper) StartPaymentStream(ctx sdk.Context, payment types.PaymentStream)
 
 	k.SetPaymentStream(ctx, payment)
 	k.SetNextPaymentStreamNumber(ctx, pNum+1)
+	k.SetActivePayment(ctx, payment.Id)
+	k.SetSenderPaymentStream(ctx, payment.Sender, payment.Id)
+	k.SetRecipientPaymentStream(ctx, payment.Recipient, payment.Id)
 }

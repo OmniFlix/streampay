@@ -11,8 +11,11 @@ import (
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
 	// Set all the paymentstream
 	for _, elem := range genState.PaymentStreamsList {
-		k.SetPaymentStream(ctx, elem)
+		k.InitPaymentStreamFromGenesis(ctx, elem)
 	}
+	// set next payment number
+	k.SetNextPaymentStreamNumber(ctx, genState.NextPaymentStreamCount)
+
 	// this line is used by starport scaffolding # genesis/module/init
 }
 

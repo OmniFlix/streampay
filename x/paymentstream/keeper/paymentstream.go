@@ -5,6 +5,7 @@ import (
 	"github.com/OmniFlix/payment-stream/x/paymentstream/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	gogotypes "github.com/gogo/protobuf/types"
 )
 
 // GetPaymentStreamCount get the number of listings
@@ -71,4 +72,96 @@ func (k Keeper) GetAllPaymentStreams(ctx sdk.Context) (list []types.PaymentStrea
 	}
 
 	return
+}
+
+func (k Keeper) SetActivePayment(ctx sdk.Context, id string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{})
+	key := types.ActivePaymentPrefix(id)
+	bz := k.cdc.MustMarshal(&gogotypes.StringValue{Value: id})
+	store.Set(key, bz)
+}
+func (k Keeper) DeleteActivePayment(ctx sdk.Context, id string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{})
+	store.Delete(types.ActivePaymentPrefix(id))
+}
+
+func (k *Keeper) GetActivePayments(ctx sdk.Context, skip, limit int64) (streams []types.PaymentStream) {
+	var (
+		store = ctx.KVStore(k.storeKey)
+		iter  = types.NewPaginatedIterator(
+			sdk.KVStorePrefixIterator(store, types.PrefixPaymentActive),
+		)
+	)
+
+	defer iter.Close()
+
+	iter.Skip(skip)
+	iter.Limit(limit, func(iter sdk.Iterator) {
+		var id gogotypes.StringValue
+		k.cdc.MustUnmarshal(iter.Value(), &id)
+		stream, _ := k.GetPaymentStream(ctx, id.Value)
+		streams = append(streams, stream)
+	})
+
+	return streams
+}
+
+func (k Keeper) SetInActivePayment(ctx sdk.Context, id string) {
+	// Delete Active payment
+	k.DeleteActivePayment(ctx, id)
+
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{})
+	key := types.InActivePaymentPrefix(id)
+	bz := k.cdc.MustMarshal(&gogotypes.StringValue{Value: id})
+	store.Set(key, bz)
+}
+func (k Keeper) DeleteInActivePayment(ctx sdk.Context, id string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{})
+	store.Delete(types.InActivePaymentPrefix(id))
+}
+func (k *Keeper) GetInActivePayments(ctx sdk.Context, skip, limit int64) (streams []types.PaymentStream) {
+	var (
+		store = ctx.KVStore(k.storeKey)
+		iter  = types.NewPaginatedIterator(
+			sdk.KVStorePrefixIterator(store, types.PrefixPaymentInActive),
+		)
+	)
+
+	defer iter.Close()
+
+	iter.Skip(skip)
+	iter.Limit(limit, func(iter sdk.Iterator) {
+		var id gogotypes.StringValue
+		k.cdc.MustUnmarshal(iter.Value(), &id)
+		stream, _ := k.GetPaymentStream(ctx, id.Value)
+		streams = append(streams, stream)
+	})
+
+	return streams
+}
+
+func (k Keeper) SetSenderPaymentStream(ctx sdk.Context, address string, id string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{})
+	key := types.KeySenderPaymentStream(address, id)
+	bz := k.cdc.MustMarshal(&gogotypes.StringValue{Value: id})
+	store.Set(key, bz)
+}
+
+func (k Keeper) SetRecipientPaymentStream(ctx sdk.Context, address string, id string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), []byte{})
+	key := types.KeyRecipientPaymentStream(address, id)
+	bz := k.cdc.MustMarshal(&gogotypes.StringValue{Value: id})
+	store.Set(key, bz)
+}
+
+func (k Keeper) InitPaymentStreamFromGenesis(ctx sdk.Context, stream types.PaymentStream) {
+	k.SetPaymentStream(ctx, stream)
+	k.SetSenderPaymentStream(ctx, stream.Sender, stream.Id)
+	k.SetRecipientPaymentStream(ctx, stream.Recipient, stream.Id)
+	if stream.Status == types.StatusCompleted {
+		k.SetInActivePayment(ctx, stream.Id)
+	}
+	if stream.Status == types.StatusOpen {
+		k.SetActivePayment(ctx, stream.Id)
+	}
 }

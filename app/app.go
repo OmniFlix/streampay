@@ -94,7 +94,7 @@ import (
 )
 
 const (
-	AccountAddressPrefix = "cosmos"
+	AccountAddressPrefix = "streampay"
 	Name                 = "payment-stream"
 )
 

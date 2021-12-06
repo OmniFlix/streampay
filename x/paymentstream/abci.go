@@ -12,7 +12,7 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 	var (
 		log = k.Logger(ctx)
 	)
-	log.Info("Starting active payments iteration", "log")
+	log.Info("Starting active streaming  payments iteration")
 
 	paymentStreams := k.GetAllPaymentStreams(ctx)
 	for _, ps := range paymentStreams {
@@ -34,10 +34,19 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 				ps.LastTransferredAt = ctx.BlockTime()
 				ps.Status = types.StatusCompleted
 				k.SetPaymentStream(ctx, ps)
+				k.SetInActivePayment(ctx, ps.Id)
 
 				ctx.EventManager().EmitEvents(
 					sdk.Events{sdk.NewEvent(
-						"update_payment",
+						"payment_transfer",
+						sdk.NewAttribute("payment-id", ps.Id),
+						sdk.NewAttribute("sender", ps.Sender),
+					),
+					},
+				)
+				ctx.EventManager().EmitEvents(
+					sdk.Events{sdk.NewEvent(
+						"payment_complete",
 						sdk.NewAttribute("payment-id", ps.Id),
 						sdk.NewAttribute("sender", ps.Sender),
 					),
@@ -59,7 +68,7 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 			totalAmount := ps.TotalAmount.Amount.Int64()
 			percentage := float64(nowTime-startTime) / float64(endTime-startTime)
 			unlockedAmount := float64(totalAmount) * percentage
-			log.Info(fmt.Sprintf("Total unlocked amount %f", unlockedAmount))
+			log.Info(fmt.Sprintf("Total unlocked amount %f for payment %s", unlockedAmount, ps.Id))
 			amountTosend := int64(unlockedAmount) - ps.TotalTransferred.Amount.Int64()
 			amount := sdk.NewCoin(ps.TotalAmount.Denom, sdk.NewInt(amountTosend))
 			if amount.IsZero() || amount.IsNil() {
@@ -75,13 +84,23 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 			if ps.TotalTransferred.IsGTE(ps.TotalAmount) {
 				log.Info(fmt.Sprintf("Updating payment status.. paymentId: %s", ps.Id))
 				ps.Status = types.StatusCompleted
+				k.SetInActivePayment(ctx, ps.Id)
+
+				ctx.EventManager().EmitEvents(
+					sdk.Events{sdk.NewEvent(
+						"payment_complete",
+						sdk.NewAttribute("payment-id", ps.Id),
+						sdk.NewAttribute("sender", ps.Sender),
+					),
+					},
+				)
 			}
 			k.SetPaymentStream(ctx, ps)
 
 			ctx.EventManager().EmitEvents(
 				sdk.Events{
 					sdk.NewEvent(
-						"update_payment",
+						"payment_transfer",
 						sdk.NewAttribute("payment-id", ps.Id),
 						sdk.NewAttribute("sender", ps.Sender),
 					),
@@ -91,5 +110,6 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 			continue
 		}
 	}
+	log.Info("Completed streaming payments iteration ..")
 	return nil
 }
