@@ -17,6 +17,13 @@ Your blockchain in development can be configured with `config.yml`. To learn mor
 
 To launch your blockchain live on multiple nodes, use `starport network` commands. Learn more about [Starport Network](https://github.com/tendermint/spn).
 
+## CLI Example
+
+To Start a payment stream
+cmd : `spd tx paymentstream stream-sed [recipient] [amount] --end-time <unix-timestamp> --chain-id <chain-id> --from <key>`
+```shell
+spd tx paymentstream stream-send streampay1vnlgxmzh8mr5e43ku38f9470p2q0jfscksa98g 10000stake --end-time 1638786850 --chain-id paymentstream --from bob
+```
 ### Web Frontend
 
 Starport has scaffolded a Vue.js-based web app in the `vue` directory. Run the following commands to install dependencies and start the app:
