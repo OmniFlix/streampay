@@ -9,6 +9,7 @@ option go_package = "github.com/OmniFlix/payment-stream/x/paymentstream/types";
 
 // GenesisState defines the paymentstream module's genesis state.
 message GenesisState {
-  repeated PaymentStream payment_streams_list = 1 [(gogoproto.nullable) = false];
+  repeated PaymentStream payment_streams_list      = 1 [(gogoproto.nullable) = false];
+  uint64                 next_payment_stream_count = 2;
   // this line is used by starport scaffolding # genesis/proto/state
 }

@@ -18,9 +18,9 @@ message PaymentStream {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.moretags)     = "yaml:\"total_amount\""
   ];
-  PaymentType               type                = 5;
+  PaymentType               stream_type         = 5 [(gogoproto.moretags) = "yaml:\"stream_type\""];
   PaymentStatus             status              = 6;
-  uint64                    lock_height         = 7 [(gogoproto.moretags) = "yaml:\"lock_height\""];
+  int64                     lock_height         = 7 [(gogoproto.moretags) = "yaml:\"lock_height\""];
   google.protobuf.Timestamp start_time          = 8 [
     (gogoproto.nullable) = false,
     (gogoproto.stdtime)  = true,

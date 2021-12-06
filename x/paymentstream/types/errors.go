@@ -8,5 +8,7 @@ import (
 
 // x/paymentstream module sentinel errors
 var (
-	ErrSample = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrSample             = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrInvalidAmount      = sdkerrors.Register(ModuleName, 1101, "invalid amount")
+	ErrUnableToLockAmount = sdkerrors.Register(ModuleName, 1102, "unable to lock amount")
 )

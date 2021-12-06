@@ -56,13 +56,13 @@ lint:
 	@golangci-lint run
 	@go mod verify
 
-start-test-chain:
+reset-and-start-test-chain:
 	rm -rf ~/.payment-stream/config/*
 	payment-streamd unsafe-reset-all
 	payment-streamd init sp-node  --chain-id "sp-test-1"
-	payment-streamd keys add validator
-	payment-streamd add-genesis-account `payment-streamd keys show validator -a` 100000000stake
-	payment-streamd gentx validator 1000000stake --moniker "validator-1" --chain-id "sp-test-1"
+	payment-streamd keys add validator --keyring-backend test
+	payment-streamd add-genesis-account `payment-streamd keys show validator -a --keyring-backend test` 100000000stake
+	payment-streamd gentx validator 1000000stake --moniker "validator-1" --chain-id "sp-test-1" --keyring-backend test
 	payment-streamd collect-gentxs
 	payment-streamd validate-genesis
 	payment-streamd start
