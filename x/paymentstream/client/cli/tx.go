@@ -38,7 +38,7 @@ func GetCmdStreamSend() *cobra.Command {
 		Example: fmt.Sprintf(
 			"$ %s tx paymnetstream stream-send [recipient] [amount]" +
 				"--end-time <end-timestamp>" +
-				"--delayed " +
+				"--delayed <bool>" +
 				version.AppName,
 		),
 		RunE: func(cmd *cobra.Command, args []string) error {
