@@ -1,5 +1,5 @@
-# paymentstream
-**paymentstream** is a blockchain built using Cosmos SDK and Tendermint and created with [Starport](https://github.com/tendermint/starport) to stream payments from on addrs to the other, using delayed and continuous payments types inspired by Vesting types from Cosmos SDK. 
+# paymentstream / Streaming Payments
+**paymentstream** is a module built using Cosmos SDK, Tendermint and [Starport](https://github.com/tendermint/starport) to stream payments from on address to the other, using delayed and continuous payments types inspired by Vesting module from Cosmos SDK.
 
 ## Get started
 
