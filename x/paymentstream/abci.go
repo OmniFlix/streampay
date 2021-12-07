@@ -21,7 +21,7 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 		}
 		log.Info(fmt.Sprintf("paymentId: %s, type: %s, status: %s", ps.Id, ps.StreamType.String(), ps.Status.String()))
 		if ps.GetStreamType() == types.TypeDelayed {
-			if ps.EndTime.Unix() > ctx.BlockTime().Unix() {
+			if ctx.BlockTime().Unix() >= ps.EndTime.Unix() {
 				recipient, err := sdk.AccAddressFromBech32(ps.Recipient)
 				if err != nil {
 					panic(err)
