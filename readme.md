@@ -1,9 +1,102 @@
 # paymentstream / Streaming Payments
 **paymentstream** is a module built using Cosmos SDK, Tendermint and [Starport](https://github.com/tendermint/starport) to stream payments from on address to the other, using delayed and continuous payments types inspired by Vesting module from Cosmos SDK.
 
-## Get started
 
+## Installation
+
+### Requirements
+
+Requirement | Notes
+----------- | -----------------
+Go version  | [Go1.17](https://go.dev/doc/install)
+Cosmos SDK  | v0.44.4
+
+
+### Get source code & Install
+
+```bash=
+git clone https://github.com/OmniFlix/payment-stream.git
+cd payment-stream
+go mod tidy
+make install
 ```
+check installation
+```bash=
+payment-streamd version
+```
+
+
+## Launch chain manually
+
+```bash=
+# Delete previous data
+rm -rf ~/.payment-stream/config/*
+
+#Init node	
+payment-streamd unsafe-reset-all
+payment-streamd init "sp-node"  --chain-id "sp-test-1"
+
+# Add keys
+payment-streamd keys add validator --keyring-backend test
+payment-streamd keys add user1 --keyring-backend test
+payment-streamd keys add user2 --keyring-backend test
+
+# Add genesis accounts
+payment-streamd add-genesis-account $(payment-streamd keys show validator -a --keyring-backend test) 1000000000stake
+payment-streamd add-genesis-account $(payment-streamd keys show user1 -a --keyring-backend test) 1000000000000stake
+
+# Create gentx
+payment-streamd gentx validator 10000000stake --moniker "validator-1" --chain-id "sp-test-1" --keyring-backend test
+
+# Collect Gentxs
+payment-streamd collect-gentxs
+payment-streamd validate-genesis
+
+# Start Chain with default config
+payment-streamd start
+```
+### CLI Commands
+
+### Transactions
+**stream-send** - to start a payment stream
+```bash=
+$ payment-streamd tx paymentstream stream-send -h
+```
+```bash=
+creates a payment stream
+
+Usage:
+  payment-streamd tx paymentstream stream-send [flags]
+
+Examples:
+$ payment-streamd tx paymnetstream stream-send [recipient] [amount] --end-time <end-timestamp> 
+```
+**example**:
+```bash=
+payment-streamd tx paymentstream stream-send streampay16qg7gpgt6hv9hqwrrk82r0f4kutqpy5zf03yx7 10000stake --end-time 1638786850 --chain-id sp-test-1 --from user1 --keyring-backend test
+```
+
+`Note: Use  --delayed flag to create delayed payment stream`
+
+### Queries
+```bash=
+payment-streamd q paymentstream payment-streams -h
+```
+```bash=
+Query payment streams.
+
+Usage:
+  payment-streamd query paymentstream payment-streams  [flags]
+
+Examples:
+$ payment-streamd query payment-stream payment-streams <id>
+```
+
+---
+
+## Launch chain using starport
+```
+cd payment-stream
 starport chain serve
 ```
 
@@ -17,44 +110,15 @@ Your blockchain in development can be configured with `config.yml`. To learn mor
 
 To launch your blockchain live on multiple nodes, use `starport network` commands. Learn more about [Starport Network](https://github.com/tendermint/spn).
 
-## CLI Example
+### Usage of CLI Commands
 
 To Start a payment stream
 cmd : `spd tx paymentstream stream-send [recipient] [amount] --end-time <unix-timestamp> --delayed --chain-id <chain-id> --from <key>`
-```shell
-spd tx paymentstream stream-send streampay1vnlgxmzh8mr5e43ku38f9470p2q0jfscksa98g 10000stake --end-time 1638786850 --delayed --chain-id paymentstream --from bob
+To start a continuous payment stream
+```bash=
+spd tx paymentstream stream-send streampay1vnlgxmzh8mr5e43ku38f9470p2q0jfscksa98g 10000stake --end-time 1638786850  --chain-id paymentstream  --from bob
 ```
 Use --delayed flag for delayed payments.
-
-### Web Frontend
-
-Starport has scaffolded a Vue.js-based web app in the `vue` directory. Run the following commands to install dependencies and start the app:
-
-```
-cd vue
-npm install
-npm run serve
-```
-
-The frontend app is built using the `@starport/vue` and `@starport/vuex` packages. For details, see the [monorepo for Starport front-end development](https://github.com/tendermint/vue).
-
-## Release
-To release a new version of your blockchain, create and push a new tag with `v` prefix. A new draft release with the configured targets will be created.
-
-```
-git tag v0.1
-git push origin v0.1
-```
-
-After a draft release is created, make your final changes from the release page and publish it.
-
-### Install
-To install the latest version of your blockchain node's binary, execute the following command on your machine:
-
-```
-curl https://get.starport.network/OmniFlix/payment-stream@latest! | sudo bash
-```
-`OmniFlix/payment-stream` should match the `username` and `repo_name` of the Github repository to which the source code was pushed. Learn more about [the install process](https://github.com/allinbits/starport-installer).
 
 ## Learn more
 
