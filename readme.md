@@ -113,7 +113,11 @@ To launch your blockchain live on multiple nodes, use `starport network` command
 ### Usage of CLI Commands
 
 To Start a payment stream
-cmd : `spd tx paymentstream stream-send [recipient] [amount] --end-time <unix-timestamp> --delayed --chain-id <chain-id> --from <key>`
+
+cmd :
+
+ `spd tx paymentstream stream-send [recipient] [amount] --end-time <unix-timestamp> --delayed --chain-id <chain-id> --from <key>`
+
 To start a continuous payment stream
 ```bash=
 spd tx paymentstream stream-send streampay1vnlgxmzh8mr5e43ku38f9470p2q0jfscksa98g 10000stake --end-time 1638786850  --chain-id paymentstream  --from bob
