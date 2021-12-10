@@ -1,6 +1,10 @@
-# paymentstream / Streaming Payments
-**paymentstream** is a module built using Cosmos SDK, Tendermint and [Starport](https://github.com/tendermint/starport) to stream payments from on address to the other, using delayed and continuous payments types inspired by Vesting module from Cosmos SDK.
+# paymentstream module
+**paymentstream** is a module built using Cosmos SDK, Tendermint and [Starport](https://github.com/tendermint/starport) to stream payments from on address to the other, using `delayed` and `continuous` payments types inspired by the vesting model in the `auth` module of the Cosmos SDK.
 
+#StreamPay Application
+StreamPay is a dApp that's built on the Stream Pay Testnet (which utilizes the `paymentstream` module. This sovereign chain is powereed by the token `uspay` or `SPAY`.
+
+While users need to pay the fee to start a payment stream in SPAY tokens, any token (native or IBC tokens) can be streamed between accounts.
 
 ## Installation
 
