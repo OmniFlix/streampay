@@ -32,6 +32,12 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 	if err != nil {
 		return nil, err
 	}
+	if ctx.BlockTime().Unix() >= msg.EndTime.Unix() {
+		return nil, sdkerrors.Wrapf(
+			types.ErrInvalidAmount,
+			fmt.Sprintf("endtime %s is not valid, should be a future timestamp", msg.EndTime.String()),
+		)
+	}
 	if msg.Amount.IsNil() || msg.Amount.IsNegative() || msg.Amount.IsZero() {
 		return nil, sdkerrors.Wrapf(
 			types.ErrInvalidAmount,
