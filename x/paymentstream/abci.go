@@ -6,6 +6,7 @@ import (
 	"github.com/OmniFlix/payment-stream/x/paymentstream/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
+	"math"
 )
 
 func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
@@ -62,11 +63,13 @@ func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
 			nowTime := ctx.BlockTime().Unix()
 			startTime := ps.StartTime.Unix()
 			endTime := ps.EndTime.Unix()
-			if nowTime >= endTime {
-				nowTime = endTime
-			}
 			totalAmount := ps.TotalAmount.Amount.Int64()
-			percentage := float64(nowTime-startTime) / float64(endTime-startTime)
+			var percentage float64
+			if nowTime >= endTime {
+				percentage = 1.0
+			} else {
+				percentage = math.Abs(float64(nowTime-startTime) / float64(endTime-startTime))
+			}
 			unlockedAmount := float64(totalAmount) * percentage
 			log.Info(fmt.Sprintf("Total unlocked amount %f for payment %s", unlockedAmount, ps.Id))
 			amountTosend := int64(unlockedAmount) - ps.TotalTransferred.Amount.Int64()
