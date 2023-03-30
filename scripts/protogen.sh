@@ -22,6 +22,6 @@ done
 
 # move proto files to the right places
 
-cp -r github.com/OmniFlix/payment-stream/x/paymentstream/types/* ./x/paymentstream/types
+cp -r github.com/OmniFlix/payment-stream/x/* ./x/
 rm -rf github.com
 

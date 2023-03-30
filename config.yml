@@ -18,4 +18,4 @@ faucet:
 build:
   binary: "spd"
 genesis:
-  chain_id: "paymentstream"
+  chain_id: "streampay"

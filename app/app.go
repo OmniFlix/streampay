@@ -26,6 +26,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -88,9 +89,9 @@ import (
 	"github.com/tendermint/spm/openapiconsole"
 
 	"github.com/OmniFlix/payment-stream/docs"
-	paymentstreammodule "github.com/OmniFlix/payment-stream/x/paymentstream"
-	paymentstreammodulekeeper "github.com/OmniFlix/payment-stream/x/paymentstream/keeper"
-	paymentstreammoduletypes "github.com/OmniFlix/payment-stream/x/paymentstream/types"
+	paymentstreammodule "github.com/OmniFlix/payment-stream/x/streampay"
+	paymentstreammodulekeeper "github.com/OmniFlix/payment-stream/x/streampay/keeper"
+	paymentstreammoduletypes "github.com/OmniFlix/payment-stream/x/streampay/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -154,7 +155,7 @@ var (
 		stakingtypes.NotBondedPoolName:      {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:                 {authtypes.Burner},
 		ibctransfertypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
-		paymentstreammoduletypes.ModuleName: {authtypes.Minter, authtypes.Burner, authtypes.Staking},
+		paymentstreammoduletypes.ModuleName: {},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 )
@@ -241,10 +242,20 @@ func New(
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 
 	keys := sdk.NewKVStoreKeys(
-		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
-		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
-		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
+		authtypes.StoreKey,
+		banktypes.StoreKey,
+		stakingtypes.StoreKey,
+		minttypes.StoreKey,
+		distrtypes.StoreKey,
+		slashingtypes.StoreKey,
+		govtypes.StoreKey,
+		paramstypes.StoreKey,
+		ibchost.StoreKey,
+		upgradetypes.StoreKey,
+		feegrant.StoreKey,
+		evidencetypes.StoreKey,
+		ibctransfertypes.StoreKey,
+		capabilitytypes.StoreKey,
 		paymentstreammoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
@@ -401,12 +412,46 @@ func New(
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
-		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
-		evidencetypes.ModuleName, stakingtypes.ModuleName, ibchost.ModuleName,
+		upgradetypes.ModuleName,
+		capabilitytypes.ModuleName,
+		minttypes.ModuleName,
+		distrtypes.ModuleName,
+		slashingtypes.ModuleName,
+		evidencetypes.ModuleName,
+		stakingtypes.ModuleName,
+		ibchost.ModuleName,
 		feegrant.ModuleName,
+		vestingtypes.ModuleName,
+		crisistypes.ModuleName,
+		paramstypes.ModuleName,
+		genutiltypes.ModuleName,
+		authtypes.ModuleName,
+		banktypes.ModuleName,
+		ibctransfertypes.ModuleName,
+		govtypes.ModuleName,
+		paymentstreammoduletypes.ModuleName,
 	)
 
-	app.mm.SetOrderEndBlockers(crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, paymentstreammoduletypes.ModuleName)
+	app.mm.SetOrderEndBlockers(
+		crisistypes.ModuleName,
+		govtypes.ModuleName,
+		stakingtypes.ModuleName,
+		authtypes.ModuleName,
+		vestingtypes.ModuleName,
+		banktypes.ModuleName,
+		minttypes.ModuleName,
+		upgradetypes.ModuleName,
+		ibchost.ModuleName,
+		ibctransfertypes.ModuleName,
+		genutiltypes.ModuleName,
+		feegrant.ModuleName,
+		slashingtypes.ModuleName,
+		distrtypes.ModuleName,
+		capabilitytypes.ModuleName,
+		evidencetypes.ModuleName,
+		paramstypes.ModuleName,
+		paymentstreammoduletypes.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -427,6 +472,10 @@ func New(
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
+		vestingtypes.ModuleName,
+		upgradetypes.ModuleName,
+		paramstypes.ModuleName,
+		feegrant.ModuleName,
 		paymentstreammoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)

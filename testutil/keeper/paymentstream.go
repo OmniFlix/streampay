@@ -3,8 +3,8 @@ package keeper
 import (
 	"testing"
 
-	"github.com/OmniFlix/payment-stream/x/paymentstream/keeper"
-	"github.com/OmniFlix/payment-stream/x/paymentstream/types"
+	"github.com/OmniFlix/payment-stream/x/streampay/keeper"
+	"github.com/OmniFlix/payment-stream/x/streampay/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
