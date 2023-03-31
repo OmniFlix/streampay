@@ -1,4 +1,4 @@
-module github.com/OmniFlix/payment-stream
+module github.com/OmniFlix/streampay
 
 go 1.19
 

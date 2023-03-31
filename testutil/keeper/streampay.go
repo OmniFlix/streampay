@@ -3,8 +3,8 @@ package keeper
 import (
 	"testing"
 
-	"github.com/OmniFlix/payment-stream/x/streampay/keeper"
-	"github.com/OmniFlix/payment-stream/x/streampay/types"
+	"github.com/OmniFlix/streampay/x/streampay/keeper"
+	"github.com/OmniFlix/streampay/x/streampay/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -16,7 +16,7 @@ import (
 	tmdb "github.com/tendermint/tm-db"
 )
 
-func PaymentstreamKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
+func StreamPayKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	memStoreKey := storetypes.NewMemoryStoreKey(types.MemStoreKey)
 

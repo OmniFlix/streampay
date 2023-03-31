@@ -1,5 +1,5 @@
 syntax = "proto3";
-package OmniFlix.paymentstream.streampay;
+package OmniFlix.streampay.v1;
 
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
@@ -7,7 +7,7 @@ import "streampay/streampay.proto";
 // this line is used by starport scaffolding # 1
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/OmniFlix/payment-stream/x/streampay/types";
+option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 
 // Query defines the gRPC querier service.
 service Query {

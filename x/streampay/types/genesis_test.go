@@ -3,7 +3,7 @@ package types_test
 import (
 	"testing"
 
-	"github.com/OmniFlix/payment-stream/x/streampay/types"
+	"github.com/OmniFlix/streampay/x/streampay/types"
 	"github.com/stretchr/testify/require"
 )
 

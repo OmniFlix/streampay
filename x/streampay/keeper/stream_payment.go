@@ -3,7 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/OmniFlix/payment-stream/x/streampay/types"
+	"github.com/OmniFlix/streampay/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"math"
 )
@@ -128,7 +128,8 @@ func (k Keeper) ProcessStreamPayments(ctx sdk.Context) error {
 				percentage = math.Abs(float64(nowTime-startTime) / float64(endTime-startTime))
 			}
 			unlockedAmount := float64(totalAmount) * percentage
-			k.Logger(ctx).Debug(fmt.Sprintf("Total unlocked amount %f for payment %s", unlockedAmount, streamPayment.Id))
+			k.Logger(ctx).Debug(
+				fmt.Sprintf("Total unlocked amount %f for payment %s", unlockedAmount, streamPayment.Id))
 			amountToSend := int64(unlockedAmount) - streamPayment.TotalTransferred.Amount.Int64()
 			amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(amountToSend))
 			if amount.IsZero() || amount.IsNil() {
@@ -167,11 +168,8 @@ func (k Keeper) ProcessStreamPayments(ctx sdk.Context) error {
 					},
 				)
 			}
-
-		} else {
-			continue
 		}
 	}
-	k.Logger(ctx).Info("Processed payment streams ..")
+	k.Logger(ctx).Info("Processed stream payments ..")
 	return nil
 }

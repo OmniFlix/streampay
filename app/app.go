@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	customAuthRest "github.com/OmniFlix/payment-stream/custom/auth/client/rest"
+	customAuthRest "github.com/OmniFlix/streampay/custom/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -88,16 +88,16 @@ import (
 	"github.com/tendermint/spm/cosmoscmd"
 	"github.com/tendermint/spm/openapiconsole"
 
-	"github.com/OmniFlix/payment-stream/docs"
-	paymentstreammodule "github.com/OmniFlix/payment-stream/x/streampay"
-	paymentstreammodulekeeper "github.com/OmniFlix/payment-stream/x/streampay/keeper"
-	paymentstreammoduletypes "github.com/OmniFlix/payment-stream/x/streampay/types"
+	"github.com/OmniFlix/streampay/docs"
+	"github.com/OmniFlix/streampay/x/streampay"
+	streampaykeeper "github.com/OmniFlix/streampay/x/streampay/keeper"
+	streampaytypes "github.com/OmniFlix/streampay/x/streampay/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 const (
 	AccountAddressPrefix = "streampay"
-	Name                 = "payment-stream"
+	Name                 = "streampay"
 )
 
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
@@ -142,20 +142,20 @@ var (
 		evidence.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		paymentstreammodule.AppModuleBasic{},
+		streampay.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:          nil,
-		distrtypes.ModuleName:               nil,
-		minttypes.ModuleName:                {authtypes.Minter},
-		stakingtypes.BondedPoolName:         {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName:      {authtypes.Burner, authtypes.Staking},
-		govtypes.ModuleName:                 {authtypes.Burner},
-		ibctransfertypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
-		paymentstreammoduletypes.ModuleName: {},
+		authtypes.FeeCollectorName:     nil,
+		distrtypes.ModuleName:          nil,
+		minttypes.ModuleName:           {authtypes.Minter},
+		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		govtypes.ModuleName:            {authtypes.Burner},
+		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		streampaytypes.ModuleName:      {},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 )
@@ -212,7 +212,7 @@ type App struct {
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 
-	PaymentstreamKeeper paymentstreammodulekeeper.Keeper
+	StreamPayKeeper streampaykeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// the module manager
@@ -256,7 +256,7 @@ func New(
 		evidencetypes.StoreKey,
 		ibctransfertypes.StoreKey,
 		capabilitytypes.StoreKey,
-		paymentstreammoduletypes.StoreKey,
+		streampaytypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -355,15 +355,15 @@ func New(
 		&stakingKeeper, govRouter,
 	)
 
-	app.PaymentstreamKeeper = *paymentstreammodulekeeper.NewKeeper(
+	app.StreamPayKeeper = *streampaykeeper.NewKeeper(
 		appCodec,
-		keys[paymentstreammoduletypes.StoreKey],
-		keys[paymentstreammoduletypes.MemStoreKey],
+		keys[streampaytypes.StoreKey],
+		keys[streampaytypes.MemStoreKey],
 
 		app.AccountKeeper,
 		app.BankKeeper,
 	)
-	paymentstreamModule := paymentstreammodule.NewAppModule(appCodec, app.PaymentstreamKeeper)
+	streampayModule := streampay.NewAppModule(appCodec, app.StreamPayKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
@@ -403,7 +403,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		paymentstreamModule,
+		streampayModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -429,7 +429,7 @@ func New(
 		banktypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		govtypes.ModuleName,
-		paymentstreammoduletypes.ModuleName,
+		streampaytypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -450,7 +450,7 @@ func New(
 		capabilitytypes.ModuleName,
 		evidencetypes.ModuleName,
 		paramstypes.ModuleName,
-		paymentstreammoduletypes.ModuleName,
+		streampaytypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -476,7 +476,7 @@ func New(
 		upgradetypes.ModuleName,
 		paramstypes.ModuleName,
 		feegrant.ModuleName,
-		paymentstreammoduletypes.ModuleName,
+		streampaytypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -666,7 +666,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(paymentstreammoduletypes.ModuleName)
+	paramsKeeper.Subspace(streampaytypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper

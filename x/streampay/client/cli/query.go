@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	"github.com/OmniFlix/payment-stream/x/streampay/types"
+	"github.com/OmniFlix/streampay/x/streampay/types"
 	"github.com/spf13/cobra"
 )
 
@@ -72,7 +72,7 @@ func GetCmdQueryStreamPayment() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "stream-payment",
 		Long:    "Query stream payment.",
-		Example: fmt.Sprintf("$ %s query steampay stream-payment <id>", version.AppName),
+		Example: fmt.Sprintf("$ %s query streampay stream-payment <id>", version.AppName),
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)

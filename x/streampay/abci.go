@@ -1,7 +1,7 @@
 package streampay
 
 import (
-	"github.com/OmniFlix/payment-stream/x/streampay/keeper"
+	"github.com/OmniFlix/streampay/x/streampay/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 )

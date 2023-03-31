@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/OmniFlix/payment-stream/app"
+	"github.com/OmniFlix/streampay/app"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	"github.com/tendermint/spm/cosmoscmd"
 )

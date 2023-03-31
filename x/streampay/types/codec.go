@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/OmniFlix/payment-stream/x/streampay/exported"
+	"github.com/OmniFlix/streampay/x/streampay/exported"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -10,9 +10,9 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgStreamSend{}, "OmniFlix/payment-stream/MsgStreamSend", nil)
+	cdc.RegisterConcrete(&MsgStreamSend{}, "OmniFlix/streampay/MsgStreamSend", nil)
 	cdc.RegisterInterface((*exported.StreamPaymentI)(nil), nil)
-	cdc.RegisterConcrete(&StreamPayment{}, "OmniFlix/payment-stream/StreamPayment", nil)
+	cdc.RegisterConcrete(&StreamPayment{}, "OmniFlix/streampay/StreamPayment", nil)
 
 	// this line is used by starport scaffolding # 2
 }
