@@ -16,6 +16,6 @@ faucet:
   name: bob
   coins: ["5token", "100000stake"]
 build:
-  binary: "spd"
+  binary: "streampayd"
 genesis:
-  chain_id: "paymentstream"
+  chain_id: "sp-test-1"

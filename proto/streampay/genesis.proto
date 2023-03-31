@@ -1,0 +1,16 @@
+syntax = "proto3";
+package OmniFlix.streampay.v1;
+
+import "streampay/streampay.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
+
+// GenesisState defines the streampay module's genesis state.
+message GenesisState {
+  repeated StreamPayment stream_payments_list      = 1 [(gogoproto.nullable) = false];
+  uint64                 next_stream_payment_number = 2;
+
+  // this line is used by starport scaffolding # genesis/proto/state
+}

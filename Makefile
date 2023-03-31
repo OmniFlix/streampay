@@ -1,5 +1,5 @@
-APP_NAME = payment-stream
-DAEMON_NAME = payment-streamd
+APP_NAME = streampay
+DAEMON_NAME = streampayd
 LEDGER_ENABLED ?= true
 
 PACKAGES=$(shell go list ./... | grep -v '/simulation')
@@ -43,9 +43,9 @@ BUILD_FLAGS := -ldflags '$(ldflags)'
 all: go.sum install
 
 install: go.sum
-		go install $(BUILD_FLAGS) ./cmd/payment-streamd/
+		go install $(BUILD_FLAGS) ./cmd/streampayd/
 build:
-		go build $(BUILD_FLAGS) -o ${GOPATH}/bin/${DAEMON_NAME} ./cmd/payment-streamd/
+		go build $(BUILD_FLAGS) -o ${GOPATH}/bin/${DAEMON_NAME} ./cmd/streampayd/
 
 go.sum: go.mod
 		@echo "--> Ensure dependencies have not been modified"
@@ -57,12 +57,12 @@ lint:
 	@go mod verify
 
 reset-and-start-test-chain:
-	rm -rf ~/.payment-stream/config/*
-	payment-streamd unsafe-reset-all
-	payment-streamd init sp-node  --chain-id "sp-test-1"
-	payment-streamd keys add validator --keyring-backend test
-	payment-streamd add-genesis-account `payment-streamd keys show validator -a --keyring-backend test` 100000000stake
-	payment-streamd gentx validator 1000000stake --moniker "validator-1" --chain-id "sp-test-1" --keyring-backend test
-	payment-streamd collect-gentxs
-	payment-streamd validate-genesis
-	payment-streamd start
+	rm -rf ~/.streampay/config/*
+	streampayd unsafe-reset-all
+	streampayd init sp-node  --chain-id "sp-test-1"
+	streampayd keys add validator --keyring-backend test
+	streampayd add-genesis-account `streampayd keys show validator -a --keyring-backend test` 100000000stake
+	streampayd gentx validator 1000000stake --moniker "validator-1" --chain-id "sp-test-1" --keyring-backend test
+	streampayd collect-gentxs
+	streampayd validate-genesis
+	streampayd start
