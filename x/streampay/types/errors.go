@@ -8,6 +8,6 @@ import (
 
 // x/streampay module errors
 var (
-	ErrInvalidAmount            = sdkerrors.Register(ModuleName, 1, "invalid amount")
-	ErrInvalidPaymentStreamType = sdkerrors.Register(ModuleName, 2, "invalid payment stream type")
+	ErrInvalidAmount            = sdkerrors.Register(ModuleName, 2, "invalid amount")
+	ErrInvalidPaymentStreamType = sdkerrors.Register(ModuleName, 3, "invalid payment stream type")
 )
