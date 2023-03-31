@@ -4,7 +4,6 @@ import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/ibc-go/modules/apps/transfer/types"
 )
 import "time"
 
@@ -42,7 +41,7 @@ func (msg MsgStreamSend) ValidateBasic() error {
 	}
 	if !msg.Amount.IsValid() || msg.Amount.IsNil() || msg.Amount.Amount.LTE(sdk.ZeroInt()) {
 		return sdkerrors.Wrapf(
-			types.ErrInvalidAmount,
+			ErrInvalidAmount,
 			fmt.Sprintf("amount %s is not valid", msg.Amount.String()),
 		)
 	}
