@@ -14,7 +14,7 @@ const (
 	QuerierRoute = ModuleName
 
 	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_paymentstream"
+	MemStoreKey = "mem_streampay"
 
 	// StreamPaymentPrefix payment streams id prefix
 	StreamPaymentPrefix = "sp"
