@@ -16,18 +16,19 @@ import (
 
 // GetTxCmd returns the transaction commands for this module
 func GetTxCmd() *cobra.Command {
-	paymentStreamTxCmd := &cobra.Command{
+	streamPaymentTxCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("%s transactions subcommands", types.ModuleName),
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-	paymentStreamTxCmd.AddCommand(
+	streamPaymentTxCmd.AddCommand(
 		GetCmdStreamSend(),
+		GetCmdStopStream(),
 	)
 
-	return paymentStreamTxCmd
+	return streamPaymentTxCmd
 }
 
 // GetCmdStreamSend implements the stream-send command
@@ -39,6 +40,7 @@ func GetCmdStreamSend() *cobra.Command {
 			"$ %s tx streampay stream-send [recipient] [amount] --end-time <end-timestamp> ",
 			version.AppName,
 		),
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -93,5 +95,32 @@ func GetCmdStreamSend() *cobra.Command {
 	_ = cmd.MarkFlagRequired(FlagEndTime)
 	flags.AddTxFlagsToCmd(cmd)
 
+	return cmd
+}
+
+// GetCmdStopStream implements the stop-stream command
+func GetCmdStopStream() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "stop-stream",
+		Long: "stops a stream payment",
+		Example: fmt.Sprintf(
+			"$ %s tx streampay stop-stream [stream-id]",
+			version.AppName,
+		),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			sender := clientCtx.GetFromAddress()
+			msg := types.NewMsgStopStream(args[0], sender.String())
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

@@ -12,6 +12,7 @@ option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 // Msg defines the Msg service.
 service Msg {
   rpc StreamSend(MsgStreamSend) returns (MsgStreamSendResponse);
+  rpc StopStream(MsgStopStream) returns (MsgStopStreamResponse);
 }
 
 
@@ -30,4 +31,12 @@ message MsgStreamSend {
   PaymentType               stream_type = 5 [(gogoproto.moretags) = "yaml:\"stream_type\""];
 }
 message MsgStreamSendResponse {
+}
+
+message MsgStopStream {
+  string                    stream_id      = 1[(gogoproto.moretags) = "yaml:\"stream_id\""];
+  string                    sender   = 2;
+}
+
+message MsgStopStreamResponse {
 }

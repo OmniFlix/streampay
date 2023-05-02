@@ -1,19 +1,19 @@
 package types
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 import "time"
 
 const (
 	MsgRoute          = "streampay"
 	TypeMsgStreamSend = "stream_send"
+	TypeMsgStopStream = "stop_stream"
 )
 
 var (
 	_ sdk.Msg = &MsgStreamSend{}
+	_ sdk.Msg = &MsgStopStream{}
 )
 
 func NewMsgStreamSend(sender, recipient string, amount sdk.Coin, _type PaymentType, endTime time.Time) *MsgStreamSend {
@@ -39,19 +39,13 @@ func (msg MsgStreamSend) ValidateBasic() error {
 	if err != nil {
 		return err
 	}
-	if !msg.Amount.IsValid() || msg.Amount.IsNil() || msg.Amount.Amount.LTE(sdk.ZeroInt()) {
-		return sdkerrors.Wrapf(
-			ErrInvalidAmount,
-			fmt.Sprintf("amount %s is not valid", msg.Amount.String()),
-		)
+	if err := validateAmount(msg.Amount); err != nil {
+		return err
 	}
-	if !(msg.StreamType == TypeDelayed || msg.StreamType == TypeContinuous) {
-		return sdkerrors.Wrapf(
-			ErrInvalidPaymentStreamType,
-			fmt.Sprintf("payment stream type %s is not valid", msg.Type()),
-		)
+	if err := ValidateTimestamp(msg.EndTime); err != nil {
+		return err
 	}
-	return nil
+	return validateStreamType(msg.StreamType)
 }
 
 // GetSignBytes Implements Msg.
@@ -61,6 +55,39 @@ func (msg *MsgStreamSend) GetSignBytes() []byte {
 
 // GetSigners Implements Msg.
 func (msg MsgStreamSend) GetSigners() []sdk.AccAddress {
+	from, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
+}
+
+func NewMsgStopStream(streamId string, sender string) *MsgStopStream {
+	return &MsgStopStream{
+		StreamId: streamId,
+		Sender:   sender,
+	}
+}
+
+func (msg MsgStopStream) Route() string { return MsgRoute }
+
+func (msg MsgStopStream) Type() string { return TypeMsgStopStream }
+
+func (msg MsgStopStream) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetSignBytes Implements Msg.
+func (msg *MsgStopStream) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners Implements Msg.
+func (msg MsgStopStream) GetSigners() []sdk.AccAddress {
 	from, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		panic(err)

@@ -43,3 +43,22 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 
 	return &types.MsgStreamSendResponse{}, nil
 }
+
+func (m msgServer) StopStream(goCtx context.Context, msg *types.MsgStopStream) (*types.MsgStopStreamResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := m.Keeper.StopStreamPayment(
+		ctx,
+		msg.StreamId,
+		sender,
+	); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgStopStreamResponse{}, nil
+}
