@@ -7,8 +7,6 @@ import (
 )
 
 func EndBlock(ctx sdk.Context, k *keeper.Keeper) []abcitypes.ValidatorUpdate {
-	if err := k.ProcessStreamPayments(ctx); err != nil {
-		panic(err)
-	}
+	k.ProcessStreamPayments(ctx)
 	return []abcitypes.ValidatorUpdate{}
 }
