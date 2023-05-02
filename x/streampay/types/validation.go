@@ -28,7 +28,7 @@ func validateStreamPayment(streamPayment StreamPayment) error {
 }
 
 func validateAmount(amount sdk.Coin) error {
-	if amount.IsValid() || amount.IsNil() || amount.Amount.LTE(sdk.ZeroInt()) {
+	if !amount.IsValid() || amount.IsNil() || amount.Amount.LTE(sdk.ZeroInt()) {
 		return sdkerrors.Wrapf(
 			ErrInvalidAmount,
 			fmt.Sprintf("amount %s is not valid", amount.String()),
