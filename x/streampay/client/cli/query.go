@@ -23,6 +23,7 @@ func GetQueryCmd() *cobra.Command {
 	}
 	cmd.AddCommand(
 		GetCmdQueryPaymentStreams(),
+		GetCmdQueryStreamPayment(),
 	)
 
 	return cmd
