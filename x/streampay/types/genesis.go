@@ -15,7 +15,6 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		StreamPaymentsList:      []StreamPayment{},
 		NextStreamPaymentNumber: DefaultNextStreamPaymentNumber,
-		// this line is used by starport scaffolding # genesis/types/default
 	}
 }
 
@@ -23,7 +22,6 @@ func DefaultGenesis() *GenesisState {
 // failure.
 func (gs GenesisState) Validate() error {
 	// Check for duplicated index in streampay
-	// this line is used by starport scaffolding # genesis/types/validate
 
 	return nil
 }

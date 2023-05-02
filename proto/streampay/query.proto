@@ -4,7 +4,6 @@ package OmniFlix.streampay.v1;
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "streampay/streampay.proto";
-// this line is used by starport scaffolding # 1
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
@@ -17,8 +16,6 @@ service Query {
   rpc StreamingPayment(QueryStreamPaymentRequest) returns (QueryStreamPaymentResponse) {
     option (google.api.http).get = "/streaming-payments/{id}";
   }
-
-  // this line is used by starport scaffolding # 2
 }
 
 message QueryStreamPaymentsRequest {
@@ -42,5 +39,3 @@ message QueryStreamPaymentRequest {
 message QueryStreamPaymentResponse {
   StreamPayment stream_payment = 1;
 }
-
-// this line is used by starport scaffolding # 3
