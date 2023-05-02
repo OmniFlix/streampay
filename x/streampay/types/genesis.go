@@ -21,7 +21,11 @@ func DefaultGenesis() *GenesisState {
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
-	// Check for duplicated index in streampay
+	for _, sp := range gs.StreamPaymentsList {
+		if err := validateStreamPayment(sp); err != nil {
+			return err
+		}
+	}
 
-	return nil
+	return ValidateNextStreamPaymentNumber(gs.NextStreamPaymentNumber)
 }
