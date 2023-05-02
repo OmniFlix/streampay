@@ -31,9 +31,12 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 		return nil, err
 	}
 
-	if err := m.Keeper.CreatePaymentStream(ctx,
+	if err := m.Keeper.CreateStreamPayment(
+		ctx,
 		sender, recipient,
-		msg.Amount, msg.StreamType, msg.EndTime,
+		msg.Amount,
+		msg.StreamType,
+		msg.EndTime,
 	); err != nil {
 		return nil, err
 	}

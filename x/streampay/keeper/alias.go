@@ -26,3 +26,11 @@ func (k Keeper) TransferAmountToModuleAccount(ctx sdk.Context, fromAddress sdk.A
 	}
 	return nil
 }
+
+func (k Keeper) TransferAmountFromModuleToModule(ctx sdk.Context, fromModule string, amount sdk.Coins) error {
+	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, fromModule, types.ModuleName, amount)
+	if err != nil {
+		return err
+	}
+	return nil
+}
