@@ -47,10 +47,10 @@ func (k Keeper) GetStreamPayment(ctx sdk.Context, id string) (val types.StreamPa
 }
 
 // SetStreamPayment set a specific StreamPayment in the store with its id
-func (k Keeper) SetStreamPayment(ctx sdk.Context, PaymentStream types.StreamPayment) {
+func (k Keeper) SetStreamPayment(ctx sdk.Context, streamPayment types.StreamPayment) {
 	store := ctx.KVStore(k.storeKey)
-	b := k.cdc.MustMarshal(&PaymentStream)
-	store.Set(types.KeyPrefixSteamPayment(PaymentStream.Id), b)
+	b := k.cdc.MustMarshal(&streamPayment)
+	store.Set(types.KeyPrefixSteamPayment(streamPayment.Id), b)
 }
 
 // RemoveStreamPayment removes a stream-payment from the store

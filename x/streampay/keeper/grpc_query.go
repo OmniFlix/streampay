@@ -76,7 +76,7 @@ func (k Keeper) StreamingPayment(goCtx context.Context,
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	streamPayment, found := k.GetStreamPayment(ctx, req.Id)
 	if !found {
-		return nil, status.Errorf(codes.NotFound, "stream payment %d not found", req.Id)
+		return nil, status.Errorf(codes.NotFound, "stream payment %s not found", req.Id)
 	}
 
 	return &types.QueryStreamPaymentResponse{StreamPayment: &streamPayment}, nil
