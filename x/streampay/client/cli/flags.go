@@ -9,9 +9,7 @@ const (
 	FlagDelayed = "delayed"
 )
 
-var (
-	FsStreamSend = flag.NewFlagSet("", flag.ContinueOnError)
-)
+var FsStreamSend = flag.NewFlagSet("", flag.ContinueOnError)
 
 func init() {
 	FsStreamSend.String(FlagEndTime, "", "end-time ")

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"time"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -10,6 +9,7 @@ import (
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type (
@@ -42,8 +42,9 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) CreatePaymentStream(ctx sdk.Context,
-	sender, recipient sdk.AccAddress, amount sdk.Coin, paymentType types.PaymentType, endTime time.Time) error {
+func (k Keeper) CreateStreamPayment(ctx sdk.Context,
+	sender, recipient sdk.AccAddress, amount sdk.Coin, paymentType types.PaymentType, endTime time.Time,
+) error {
 	if ctx.BlockTime().Unix() >= endTime.Unix() {
 		return sdkerrors.Wrapf(
 			types.ErrInvalidAmount,
@@ -59,16 +60,58 @@ func (k Keeper) CreatePaymentStream(ctx sdk.Context,
 	if err := k.TransferAmountToModuleAccount(ctx, sender, sdk.NewCoins(amount)); err != nil {
 		return err
 	}
-	paymentStream := types.NewStreamPayment(sender.String(), recipient.String(), amount, paymentType, endTime)
+	streamPayment := types.NewStreamPayment(sender.String(), recipient.String(), amount, paymentType, endTime)
 	pNum := k.GetNextStreamPaymentNumber(ctx)
 
-	paymentStream.Id = types.StreamPaymentPrefix + fmt.Sprint(pNum)
-	paymentStream.LockHeight = ctx.BlockHeight()
-	paymentStream.StartTime = ctx.BlockTime()
-	paymentStream.TotalTransferred = sdk.NewCoin(paymentStream.TotalAmount.Denom, sdk.NewInt(0))
+	// update stream payment
+	streamPayment.Id = types.StreamPaymentPrefix + fmt.Sprint(pNum)
+	streamPayment.LockHeight = ctx.BlockHeight()
+	streamPayment.StartTime = ctx.BlockTime()
+	streamPayment.TotalTransferred = sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(0))
 
-	k.SetStreamPayment(ctx, paymentStream)
+	k.SetStreamPayment(ctx, streamPayment)
 	k.SetNextStreamPaymentNumber(ctx, pNum+1)
+
+	// emit events
+	k.emitCreateStreamPaymentEvent(
+		ctx,
+		streamPayment.Id,
+		streamPayment.Sender,
+		streamPayment.Recipient,
+		streamPayment.TotalAmount,
+		streamPayment.StreamType.String(),
+		streamPayment.EndTime,
+	)
+
+	return nil
+}
+
+func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.AccAddress) error {
+	streamPayment, ok := k.GetStreamPayment(ctx, streamId)
+	if !ok {
+		return sdkerrors.Wrapf(
+			sdkerrors.ErrNotFound,
+			fmt.Sprintf("no stream payment found with id %s", streamId),
+		)
+	}
+	if sender.String() != streamPayment.Sender {
+		return sdkerrors.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			fmt.Sprintf("address %s is not allowed to stop the stream payment", streamId),
+		)
+	}
+	remainingAmount := streamPayment.TotalAmount.Sub(streamPayment.TotalTransferred)
+	if err := k.TransferAmountFromModuleAccount(ctx, sender, sdk.NewCoins(remainingAmount)); err != nil {
+		return err
+	}
+	k.RemoveStreamPayment(ctx, streamId)
+
+	// emit events
+	k.emitStopStreamPaymentEvent(
+		ctx,
+		streamPayment.Id,
+		streamPayment.Sender,
+	)
 
 	return nil
 }

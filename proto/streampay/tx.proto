@@ -1,7 +1,6 @@
 syntax = "proto3";
 package OmniFlix.streampay.v1;
 
-// this line is used by starport scaffolding # proto/tx/import
 import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 import "google/protobuf/timestamp.proto";
@@ -13,7 +12,7 @@ option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 // Msg defines the Msg service.
 service Msg {
   rpc StreamSend(MsgStreamSend) returns (MsgStreamSendResponse);
-  // this line is used by starport scaffolding # proto/tx/rpc
+  rpc StopStream(MsgStopStream) returns (MsgStopStreamResponse);
 }
 
 
@@ -34,4 +33,10 @@ message MsgStreamSend {
 message MsgStreamSendResponse {
 }
 
-// this line is used by starport scaffolding # proto/tx/message
+message MsgStopStream {
+  string                    stream_id      = 1[(gogoproto.moretags) = "yaml:\"stream_id\""];
+  string                    sender   = 2;
+}
+
+message MsgStopStreamResponse {
+}

@@ -9,23 +9,29 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
-func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgStreamSend{}, "OmniFlix/streampay/MsgStreamSend", nil)
-	cdc.RegisterInterface((*exported.StreamPaymentI)(nil), nil)
-	cdc.RegisterConcrete(&StreamPayment{}, "OmniFlix/streampay/StreamPayment", nil)
+const (
+	AminoTypeStreamSendMsg = "OmniFlix/streampay/MsgStreamSend"
+	AminoTypeStopStreamMsg = "OmniFlix/streampay/MsgStopStream"
+	AminoTypeStreamPayment = "OmniFlix/streampay/StreamPayment"
+)
 
-	// this line is used by starport scaffolding # 2
+func RegisterCodec(cdc *codec.LegacyAmino) {
+	cdc.RegisterConcrete(&MsgStreamSend{}, AminoTypeStreamSendMsg, nil)
+	cdc.RegisterConcrete(&MsgStopStream{}, AminoTypeStopStreamMsg, nil)
+
+	cdc.RegisterInterface((*exported.StreamPaymentI)(nil), nil)
+	cdc.RegisterConcrete(&StreamPayment{}, AminoTypeStreamPayment, nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgStreamSend{},
+		&MsgStopStream{},
 	)
 
 	registry.RegisterImplementations((*exported.StreamPaymentI)(nil),
 		&StreamPayment{},
 	)
-	// this line is used by starport scaffolding # 3
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

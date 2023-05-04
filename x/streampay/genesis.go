@@ -15,8 +15,6 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	}
 	// set next payment number
 	k.SetNextStreamPaymentNumber(ctx, genState.NextStreamPaymentNumber)
-
-	// this line is used by starport scaffolding # genesis/module/init
 }
 
 // ExportGenesis returns the capability module's exported genesis.
@@ -25,7 +23,6 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 
 	genesis.StreamPaymentsList = k.GetAllStreamPayments(ctx)
 	genesis.NextStreamPaymentNumber = k.GetNextStreamPaymentNumber(ctx)
-	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis
 }

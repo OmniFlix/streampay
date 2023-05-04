@@ -1,5 +1,7 @@
 package types
 
+import "fmt"
+
 // DefaultNextStreamPaymentNumber is the default number for next stream payment
 const DefaultNextStreamPaymentNumber uint64 = 1
 
@@ -15,15 +17,21 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		StreamPaymentsList:      []StreamPayment{},
 		NextStreamPaymentNumber: DefaultNextStreamPaymentNumber,
-		// this line is used by starport scaffolding # genesis/types/default
 	}
 }
 
 // Validate performs basic genesis state validation returning an error upon any
 // failure.
 func (gs GenesisState) Validate() error {
-	// Check for duplicated index in streampay
-	// this line is used by starport scaffolding # genesis/types/validate
+	var streamIds map[string]bool
+	for _, sp := range gs.StreamPaymentsList {
+		if err := validateStreamPayment(sp); err != nil {
+			return err
+		}
+		if streamIds[sp.Id] {
+			return fmt.Errorf("duplicate stream id %s", sp.Id)
+		}
+	}
 
-	return nil
+	return ValidateNextStreamPaymentNumber(gs.NextStreamPaymentNumber)
 }

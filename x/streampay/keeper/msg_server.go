@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -31,12 +32,34 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 		return nil, err
 	}
 
-	if err := m.Keeper.CreatePaymentStream(ctx,
+	if err := m.Keeper.CreateStreamPayment(
+		ctx,
 		sender, recipient,
-		msg.Amount, msg.StreamType, msg.EndTime,
+		msg.Amount,
+		msg.StreamType,
+		msg.EndTime,
 	); err != nil {
 		return nil, err
 	}
 
 	return &types.MsgStreamSendResponse{}, nil
+}
+
+func (m msgServer) StopStream(goCtx context.Context, msg *types.MsgStopStream) (*types.MsgStopStreamResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := m.Keeper.StopStreamPayment(
+		ctx,
+		msg.StreamId,
+		sender,
+	); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgStopStreamResponse{}, nil
 }

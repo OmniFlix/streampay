@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/OmniFlix/streampay/x/streampay/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,31 +24,37 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: &types.GenesisState{
 				StreamPaymentsList: []types.StreamPayment{
 					{
-						Id: "ps1",
+						Id:               "sp1",
+						Sender:           "streampay1amnszjdguwlxaawqg9ey6axcyqk38vcevt5r7x",
+						Recipient:        "streampay12ecdcddd4rk0zhkazfvj6d37zwyhylhhp5fgu6",
+						StreamType:       types.TypeDelayed,
+						TotalAmount:      sdk.NewCoin("uspay", sdk.NewInt(1000000)),
+						TotalTransferred: sdk.NewCoin("uspay", sdk.ZeroInt()),
 					},
 					{
-						Id: "ps2",
+						Id:               "sp2",
+						Sender:           "streampay1amnszjdguwlxaawqg9ey6axcyqk38vcevt5r7x",
+						Recipient:        "streampay12ecdcddd4rk0zhkazfvj6d37zwyhylhhp5fgu6",
+						StreamType:       types.TypeContinuous,
+						LockHeight:       123456,
+						TotalAmount:      sdk.NewCoin("uspay", sdk.NewInt(1000000)),
+						TotalTransferred: sdk.NewCoin("uspay", sdk.ZeroInt()),
 					},
 				},
-				// this line is used by starport scaffolding # types/genesis/validField
 			},
 			valid: true,
 		},
 		{
-			desc: "duplicated streampay",
+			desc: "partial values",
 			genState: &types.GenesisState{
 				StreamPaymentsList: []types.StreamPayment{
 					{
-						Id: "ps1",
-					},
-					{
-						Id: "ps1",
+						Id: "sp1",
 					},
 				},
 			},
 			valid: false,
 		},
-		// this line is used by starport scaffolding # types/genesis/testcase
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			err := tc.genState.Validate()
