@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,7 +12,8 @@ import (
 )
 
 func (k Keeper) StreamingPayments(c context.Context,
-	req *types.QueryStreamPaymentsRequest) (*types.QueryStreamPaymentsResponse, error) {
+	req *types.QueryStreamPaymentsRequest,
+) (*types.QueryStreamPaymentsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -56,7 +58,6 @@ func (k Keeper) StreamingPayments(c context.Context,
 
 			return false, nil
 		})
-
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

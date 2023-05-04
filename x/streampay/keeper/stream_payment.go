@@ -3,10 +3,11 @@ package keeper
 import (
 	"encoding/binary"
 	"fmt"
+	"math"
+
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
-	"math"
 )
 
 // GetNextStreamPaymentNumber get next stream payment number
@@ -83,7 +84,6 @@ func (k Keeper) IterateStreamPayments(ctx sdk.Context, fn func(index int64, stre
 
 // GetAllStreamPayments returns all PaymentStreams
 func (k Keeper) GetAllStreamPayments(ctx sdk.Context) (streamPayments []types.StreamPayment) {
-
 	k.IterateStreamPayments(ctx, func(index int64, streamPayment types.StreamPayment) (stop bool) {
 		streamPayments = append(streamPayments, streamPayment)
 		return false
@@ -194,5 +194,4 @@ func (k Keeper) getUnlockedAmount(ctx sdk.Context, streamPayment types.StreamPay
 		percentage = math.Abs(float64(nowTime-startTime) / float64(endTime-startTime))
 	}
 	return float64(totalAmount) * percentage
-
 }

@@ -1,12 +1,13 @@
 package app
 
 import (
-	"github.com/OmniFlix/streampay/docs"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/OmniFlix/streampay/docs"
+	"github.com/cosmos/cosmos-sdk/simapp"
 
 	"github.com/OmniFlix/streampay/app/openapiconsole"
 	appparams "github.com/OmniFlix/streampay/app/params"
@@ -372,7 +373,7 @@ func NewStreamPayApp(
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
 	// we prefer to be more strict in what arguments the modules expect.
-	var skipGenesisInvariants = cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
+	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
@@ -631,7 +632,7 @@ func (app *StreamPayApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.
 	rpc.RegisterRoutes(clientCtx, apiSvr.Router)
 	// Register legacy tx routes.
 	authrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
-	//Register custom tx routes
+	// Register custom tx routes
 	customAuthRest.RegisterTxRoutes(clientCtx, apiSvr.Router)
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)

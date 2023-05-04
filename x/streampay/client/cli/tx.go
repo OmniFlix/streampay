@@ -2,13 +2,14 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/spf13/cobra"
-	"strconv"
-	"time"
 
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	"github.com/cosmos/cosmos-sdk/client"

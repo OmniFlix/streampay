@@ -2,9 +2,10 @@ package types
 
 import (
 	"fmt"
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"time"
 )
 
 func validateStreamPayment(streamPayment StreamPayment) error {

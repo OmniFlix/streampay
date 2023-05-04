@@ -1,10 +1,11 @@
 package types_test
 
 import (
+	"testing"
+
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

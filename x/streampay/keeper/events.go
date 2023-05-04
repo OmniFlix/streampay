@@ -1,9 +1,10 @@
 package keeper
 
 import (
+	"time"
+
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"time"
 )
 
 func (k Keeper) emitStreamPaymentTransferEvent(ctx sdk.Context, streamId, recipient string, amount sdk.Coin) {
@@ -18,6 +19,7 @@ func (k Keeper) emitStreamPaymentTransferEvent(ctx sdk.Context, streamId, recipi
 		},
 	)
 }
+
 func (k Keeper) emitStreamPaymentEndEvent(ctx sdk.Context, streamId, sender string) {
 	ctx.EventManager().EmitEvents(
 		sdk.Events{
@@ -50,6 +52,7 @@ func (k Keeper) emitCreateStreamPaymentEvent(ctx sdk.Context,
 		},
 	)
 }
+
 func (k Keeper) emitStopStreamPaymentEvent(ctx sdk.Context, streamId, sender string) {
 	ctx.EventManager().EmitEvents(
 		sdk.Events{

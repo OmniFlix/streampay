@@ -43,7 +43,8 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 func (k Keeper) CreateStreamPayment(ctx sdk.Context,
-	sender, recipient sdk.AccAddress, amount sdk.Coin, paymentType types.PaymentType, endTime time.Time) error {
+	sender, recipient sdk.AccAddress, amount sdk.Coin, paymentType types.PaymentType, endTime time.Time,
+) error {
 	if ctx.BlockTime().Unix() >= endTime.Unix() {
 		return sdkerrors.Wrapf(
 			types.ErrInvalidAmount,

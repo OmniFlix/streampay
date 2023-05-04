@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -39,7 +40,6 @@ func GetCmdQueryPaymentStreams() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			clientCtx, err := client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
-
 			if err != nil {
 				return err
 			}
@@ -55,7 +55,6 @@ func GetCmdQueryPaymentStreams() *cobra.Command {
 				&types.QueryStreamPaymentsRequest{
 					Pagination: pageReq,
 				})
-
 			if err != nil {
 				return err
 			}
@@ -78,7 +77,6 @@ func GetCmdQueryStreamPayment() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			clientCtx, err := client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
-
 			if err != nil {
 				return err
 			}
@@ -93,7 +91,6 @@ func GetCmdQueryStreamPayment() *cobra.Command {
 				&types.QueryStreamPaymentRequest{
 					Id: args[0],
 				})
-
 			if err != nil {
 				return err
 			}
