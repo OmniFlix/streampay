@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"time"
 
 	"github.com/tendermint/tendermint/libs/log"
@@ -10,6 +9,7 @@ import (
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type (
@@ -63,55 +63,6 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 	pNum := k.GetNextStreamPaymentNumber(ctx)
 
 	// update stream payment
-	streamPayment.Id = types.StreamPaymentPrefix + fmt.Sprint(pNum)
-	streamPayment.LockHeight = ctx.BlockHeight()
-	streamPayment.StartTime = ctx.BlockTime()
-	streamPayment.TotalTransferred = sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(0))
-
-	k.SetStreamPayment(ctx, streamPayment)
-	k.SetNextStreamPaymentNumber(ctx, pNum+1)
-
-	// emit events
-	k.emitCreateStreamPaymentEvent(
-		ctx,
-		streamPayment.Id,
-		streamPayment.Sender,
-		streamPayment.Recipient,
-		streamPayment.TotalAmount,
-		streamPayment.StreamType.String(),
-		streamPayment.EndTime,
-	)
-
-	return nil
-}
-
-func (k Keeper) CreateStreamPaymentFromModule(
-	ctx sdk.Context,
-	fromModule string,
-	recipient sdk.AccAddress,
-	amount sdk.Coin,
-	paymentType types.PaymentType,
-	endTime time.Time,
-) error {
-	if ctx.BlockTime().Unix() >= endTime.Unix() {
-		return sdkerrors.Wrapf(
-			types.ErrInvalidAmount,
-			fmt.Sprintf("endtime %s is not valid, should be a future timestamp", endTime.String()),
-		)
-	}
-	if amount.IsNil() || amount.IsNegative() || amount.IsZero() {
-		return sdkerrors.Wrapf(
-			types.ErrInvalidAmount,
-			fmt.Sprintf("amount %s is not valid format", amount.String()),
-		)
-	}
-	if err := k.TransferAmountFromModuleToModule(ctx, fromModule, sdk.NewCoins(amount)); err != nil {
-		return err
-	}
-	fromModuleAddress := k.accountKeeper.GetModuleAccount(ctx, fromModule)
-	streamPayment := types.NewStreamPayment(fromModuleAddress.String(), recipient.String(), amount, paymentType, endTime)
-	pNum := k.GetNextStreamPaymentNumber(ctx)
-
 	streamPayment.Id = types.StreamPaymentPrefix + fmt.Sprint(pNum)
 	streamPayment.LockHeight = ctx.BlockHeight()
 	streamPayment.StartTime = ctx.BlockTime()
