@@ -63,3 +63,24 @@ func (m msgServer) StopStream(goCtx context.Context, msg *types.MsgStopStream) (
 
 	return &types.MsgStopStreamResponse{}, nil
 }
+
+func (m msgServer) ClaimStreamedAmount(
+	goCtx context.Context, msg *types.MsgClaimStreamedAmount,
+) (*types.MsgClaimStreamedAmountResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	claimer, err := sdk.AccAddressFromBech32(msg.Claimer)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := m.Keeper.ClaimStreamedAmount(
+		ctx,
+		msg.StreamId,
+		claimer,
+	); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgClaimStreamedAmountResponse{}, nil
+}

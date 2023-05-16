@@ -13,6 +13,7 @@ option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 service Msg {
   rpc StreamSend(MsgStreamSend) returns (MsgStreamSendResponse);
   rpc StopStream(MsgStopStream) returns (MsgStopStreamResponse);
+  rpc ClaimStreamedAmount(MsgClaimStreamedAmount) returns (MsgClaimStreamedAmountResponse);
 }
 
 
@@ -28,7 +29,7 @@ message MsgStreamSend {
     (gogoproto.stdtime)  = true,
     (gogoproto.moretags) = "yaml:\"end_time\""
   ];
-  PaymentType               stream_type = 5 [(gogoproto.moretags) = "yaml:\"stream_type\""];
+  PaymentType              stream_type = 5 [(gogoproto.moretags) = "yaml:\"stream_type\""];
 }
 message MsgStreamSendResponse {
 }
@@ -39,4 +40,12 @@ message MsgStopStream {
 }
 
 message MsgStopStreamResponse {
+}
+
+message MsgClaimStreamedAmount {
+  string                    stream_id      = 1[(gogoproto.moretags) = "yaml:\"stream_id\""];
+  string                    claimer   = 2;
+}
+
+message MsgClaimStreamedAmountResponse {
 }

@@ -7,7 +7,7 @@ const DefaultNextStreamPaymentNumber uint64 = 1
 
 func NewGenesisState(streams []StreamPayment, nextStreamPaymentNum uint64) *GenesisState {
 	return &GenesisState{
-		StreamPaymentsList:      streams,
+		StreamPayments:          streams,
 		NextStreamPaymentNumber: nextStreamPaymentNum,
 	}
 }
@@ -15,7 +15,7 @@ func NewGenesisState(streams []StreamPayment, nextStreamPaymentNum uint64) *Gene
 // DefaultGenesis returns the default Capability genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-		StreamPaymentsList:      []StreamPayment{},
+		StreamPayments:          []StreamPayment{},
 		NextStreamPaymentNumber: DefaultNextStreamPaymentNumber,
 	}
 }
@@ -24,7 +24,7 @@ func DefaultGenesis() *GenesisState {
 // failure.
 func (gs GenesisState) Validate() error {
 	var streamIds map[string]bool
-	for _, sp := range gs.StreamPaymentsList {
+	for _, sp := range gs.StreamPayments {
 		if err := validateStreamPayment(sp); err != nil {
 			return err
 		}

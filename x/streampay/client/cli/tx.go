@@ -27,6 +27,7 @@ func GetTxCmd() *cobra.Command {
 	streamPaymentTxCmd.AddCommand(
 		GetCmdStreamSend(),
 		GetCmdStopStream(),
+		GetCmdClaimStreamedAmount(),
 	)
 
 	return streamPaymentTxCmd
@@ -124,4 +125,31 @@ func GetCmdStopStream() *cobra.Command {
 	}
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
+}
+
+func GetCmdClaimStreamedAmount() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "claim",
+		Long: "claim streamed amount",
+		Example: fmt.Sprintf(
+			"$ %s tx streampay claim [stream-id]",
+			version.AppName,
+		),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			claimer := clientCtx.GetFromAddress()
+			msg := types.NewMsgClaimStreamedAmount(args[0], claimer.String())
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+
 }

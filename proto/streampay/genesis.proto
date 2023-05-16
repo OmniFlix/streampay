@@ -8,7 +8,6 @@ option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 
 // GenesisState defines the streampay module's genesis state.
 message GenesisState {
-  repeated StreamPayment stream_payments_list      = 1 [(gogoproto.nullable) = false];
+  repeated StreamPayment stream_payments      = 1 [(gogoproto.nullable) = false];
   uint64                 next_stream_payment_number = 2;
-
 }

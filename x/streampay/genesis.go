@@ -10,7 +10,7 @@ import (
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
 	// Set all the streampay
-	for _, streamPayment := range genState.StreamPaymentsList {
+	for _, streamPayment := range genState.StreamPayments {
 		k.SetStreamPayment(ctx, streamPayment)
 	}
 	// set next payment number
@@ -21,7 +21,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 
-	genesis.StreamPaymentsList = k.GetAllStreamPayments(ctx)
+	genesis.StreamPayments = k.GetAllStreamPayments(ctx)
 	genesis.NextStreamPaymentNumber = k.GetNextStreamPaymentNumber(ctx)
 
 	return genesis

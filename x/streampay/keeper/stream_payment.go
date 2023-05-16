@@ -121,13 +121,13 @@ func (k Keeper) ProcessStreamPayments(ctx sdk.Context) {
 			if ctx.BlockTime().Unix() < streamPayment.StartTime.Unix() {
 				return false
 			}
-			if streamPayment.TotalTransferred.IsGTE(streamPayment.TotalAmount) {
+			if streamPayment.StreamedAmount.IsGTE(streamPayment.TotalAmount) {
 				k.RemoveStreamPayment(ctx, streamPayment.Id)
 				k.emitStreamPaymentEndEvent(ctx, streamPayment.Id, streamPayment.Sender)
 				return false
 			}
 			unlockedAmount := k.getUnlockedAmount(ctx, streamPayment)
-			amountToSend := int64(unlockedAmount) - streamPayment.TotalTransferred.Amount.Int64()
+			amountToSend := int64(unlockedAmount) - streamPayment.StreamedAmount.Amount.Int64()
 			amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(amountToSend))
 
 			if amount.IsZero() || amount.IsNil() {
@@ -142,8 +142,8 @@ func (k Keeper) ProcessStreamPayments(ctx sdk.Context) {
 			}
 			logger.Debug(fmt.Sprintf("Transferred amount %s to %s", amount.String(), streamPayment.Recipient))
 			// update stream payment
-			streamPayment.TotalTransferred = streamPayment.TotalTransferred.Add(amount)
-			streamPayment.LastTransferredAt = ctx.BlockTime()
+			streamPayment.StreamedAmount = streamPayment.StreamedAmount.Add(amount)
+			streamPayment.LastClaimedAt = ctx.BlockTime()
 			k.SetStreamPayment(ctx, streamPayment)
 			// emit events
 			k.emitStreamPaymentTransferEvent(ctx, streamPayment.Id, streamPayment.Recipient, amount)

@@ -65,9 +65,8 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 
 	// update stream payment
 	streamPayment.Id = types.StreamPaymentPrefix + fmt.Sprint(pNum)
-	streamPayment.LockHeight = ctx.BlockHeight()
 	streamPayment.StartTime = ctx.BlockTime()
-	streamPayment.TotalTransferred = sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(0))
+	streamPayment.StreamedAmount = sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(0))
 
 	k.SetStreamPayment(ctx, streamPayment)
 	k.SetNextStreamPaymentNumber(ctx, pNum+1)
@@ -100,7 +99,7 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 			fmt.Sprintf("address %s is not allowed to stop the stream payment", streamId),
 		)
 	}
-	remainingAmount := streamPayment.TotalAmount.Sub(streamPayment.TotalTransferred)
+	remainingAmount := streamPayment.TotalAmount.Sub(streamPayment.StreamedAmount)
 	if err := k.TransferAmountFromModuleAccount(ctx, sender, sdk.NewCoins(remainingAmount)); err != nil {
 		return err
 	}
@@ -113,5 +112,9 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 		streamPayment.Sender,
 	)
 
+	return nil
+}
+
+func (k Keeper) ClaimStreamedAmount(ctx sdk.Context, streamId string, claimer sdk.AccAddress) error {
 	return nil
 }

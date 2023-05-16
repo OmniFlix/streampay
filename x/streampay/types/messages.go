@@ -6,14 +6,16 @@ import (
 import "time"
 
 const (
-	MsgRoute          = "streampay"
-	TypeMsgStreamSend = "stream_send"
-	TypeMsgStopStream = "stop_stream"
+	MsgRoute                   = "streampay"
+	TypeMsgStreamSend          = "stream_send"
+	TypeMsgStopStream          = "stop_stream"
+	TypeMsgClaimStreamedAmount = "claim_streamed_amount"
 )
 
 var (
 	_ sdk.Msg = &MsgStreamSend{}
 	_ sdk.Msg = &MsgStopStream{}
+	_ sdk.Msg = &MsgClaimStreamedAmount{}
 )
 
 func NewMsgStreamSend(sender, recipient string, amount sdk.Coin, _type PaymentType, endTime time.Time) *MsgStreamSend {
@@ -89,6 +91,39 @@ func (msg *MsgStopStream) GetSignBytes() []byte {
 // GetSigners Implements Msg.
 func (msg MsgStopStream) GetSigners() []sdk.AccAddress {
 	from, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
+}
+
+func NewMsgClaimStreamedAmount(streamId string, claimer string) *MsgClaimStreamedAmount {
+	return &MsgClaimStreamedAmount{
+		StreamId: streamId,
+		Claimer:  claimer,
+	}
+}
+
+func (msg MsgClaimStreamedAmount) Route() string { return MsgRoute }
+
+func (msg MsgClaimStreamedAmount) Type() string { return TypeMsgClaimStreamedAmount }
+
+func (msg MsgClaimStreamedAmount) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.Claimer)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetSignBytes Implements Msg.
+func (msg *MsgClaimStreamedAmount) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners Implements Msg.
+func (msg MsgClaimStreamedAmount) GetSigners() []sdk.AccAddress {
+	from, err := sdk.AccAddressFromBech32(msg.Claimer)
 	if err != nil {
 		panic(err)
 	}
