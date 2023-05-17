@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -78,12 +80,27 @@ func GetCmdStreamSend() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			streamPeriodsFile, err := cmd.Flags().GetString(FlagStreamPeriodsFile)
+			if err != nil {
+				return err
+			}
 			_type := types.TypeContinuous
+			var periods []*types.Period
 			if delayed {
 				_type = types.TypeDelayed
+			} else if streamPeriodsFile != "" {
+				_type = types.TypePeriodic
+				periods, err = parsePeriods(streamPeriodsFile)
+				if err != nil {
+					return err
+				}
+			}
+			cancellable, err := cmd.Flags().GetBool(FlagCancellable)
+			if err != nil {
+				return err
 			}
 
-			msg := types.NewMsgStreamSend(sender.String(), recipient.String(), amount, _type, etm)
+			msg := types.NewMsgStreamSend(sender.String(), recipient.String(), amount, _type, etm, periods, cancellable)
 
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -152,4 +169,18 @@ func GetCmdClaimStreamedAmount() *cobra.Command {
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 
+}
+
+func parsePeriods(filePath string) ([]*types.Period, error) {
+	var periods []*types.Period
+	contents, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(contents, &periods)
+	if err != nil {
+		return nil, err
+	}
+	return periods, nil
 }

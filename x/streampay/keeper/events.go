@@ -7,13 +7,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k Keeper) emitStreamPaymentTransferEvent(ctx sdk.Context, streamId, recipient string, amount sdk.Coin) {
+func (k Keeper) emitStreamPaymentClaimEvent(ctx sdk.Context, streamId, claimer string, amount sdk.Coin) {
 	ctx.EventManager().EmitEvents(
 		sdk.Events{
 			sdk.NewEvent(
-				types.EventTypeTransferStreamPayment,
+				types.EventTypeClaimStreamedAmount,
 				sdk.NewAttribute(types.EventAttributePaymentId, streamId),
-				sdk.NewAttribute(types.EventAttributeRecipient, recipient),
+				sdk.NewAttribute(types.EventAttributeClaimer, claimer),
 				sdk.NewAttribute(types.EventAttributeAmount, amount.String()),
 			),
 		},

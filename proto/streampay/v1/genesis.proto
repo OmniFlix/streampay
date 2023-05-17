@@ -1,7 +1,8 @@
 syntax = "proto3";
 package OmniFlix.streampay.v1;
 
-import "streampay/streampay.proto";
+import "streampay/v1/streampay.proto";
+import "streampay/v1/params.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
@@ -10,4 +11,5 @@ option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 message GenesisState {
   repeated StreamPayment stream_payments      = 1 [(gogoproto.nullable) = false];
   uint64                 next_stream_payment_number = 2;
+  Params params                 = 3;
 }

@@ -18,13 +18,23 @@ var (
 	_ sdk.Msg = &MsgClaimStreamedAmount{}
 )
 
-func NewMsgStreamSend(sender, recipient string, amount sdk.Coin, _type PaymentType, endTime time.Time) *MsgStreamSend {
+func NewMsgStreamSend(
+	sender,
+	recipient string,
+	amount sdk.Coin,
+	_type StreamType,
+	endTime time.Time,
+	periods []*Period,
+	cancellable bool,
+) *MsgStreamSend {
 	return &MsgStreamSend{
-		Sender:     sender,
-		Recipient:  recipient,
-		Amount:     amount,
-		StreamType: _type,
-		EndTime:    endTime,
+		Sender:      sender,
+		Recipient:   recipient,
+		Amount:      amount,
+		StreamType:  _type,
+		EndTime:     endTime,
+		Periods:     periods,
+		Cancellable: cancellable,
 	}
 }
 
@@ -46,6 +56,11 @@ func (msg MsgStreamSend) ValidateBasic() error {
 	}
 	if err := ValidateTimestamp(msg.EndTime); err != nil {
 		return err
+	}
+	if msg.StreamType == TypePeriodic {
+		if err := validatePeriods(msg.Periods, msg.Amount); err != nil {
+			return err
+		}
 	}
 	return validateStreamType(msg.StreamType)
 }
