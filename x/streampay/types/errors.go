@@ -15,4 +15,5 @@ var (
 	ErrInvalidStreamPaymentFee  = sdkerrors.Register(ModuleName, 6, "invalid stream payment fee")
 	ErrInvalidFee               = sdkerrors.Register(ModuleName, 7, "invalid fee")
 	ErrInvalidPeriods           = sdkerrors.Register(ModuleName, 8, "invalid periods")
+	ErrInvalidDuration          = sdkerrors.Register(ModuleName, 9, "invalid duration")
 )

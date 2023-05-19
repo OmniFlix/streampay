@@ -32,7 +32,17 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	distributionKeeper types.DistributionKeeper,
+	ps paramtypes.Subspace,
 ) *Keeper {
+	// ensure streampay module account is set
+	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
+
+	// set KeyTable if it has not already been set
+	if !ps.HasKeyTable() {
+		ps = ps.WithKeyTable(types.ParamKeyTable())
+	}
 	return &Keeper{
 		cdc:                cdc,
 		storeKey:           storeKey,
@@ -40,6 +50,7 @@ func NewKeeper(
 		accountKeeper:      accountKeeper,
 		bankKeeper:         bankKeeper,
 		distributionKeeper: distributionKeeper,
+		paramSpace:         ps,
 	}
 }
 
@@ -52,13 +63,14 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 	recipient sdk.AccAddress,
 	amount sdk.Coin,
 	streamType types.StreamType,
-	endTime time.Time,
+	duration time.Duration,
 	periods []*types.Period,
+	cancellable bool,
 ) error {
-	if ctx.BlockTime().Unix() >= endTime.Unix() {
+	if duration <= 0 {
 		return sdkerrors.Wrapf(
 			types.ErrInvalidAmount,
-			fmt.Sprintf("endtime %s is not valid, should be a future timestamp", endTime.String()),
+			fmt.Sprintf("duration %s is not valid, should be a possitive value", duration.String()),
 		)
 	}
 	if amount.IsNil() || amount.IsNegative() || amount.IsZero() {
@@ -67,15 +79,24 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 			fmt.Sprintf("amount %s is not valid format", amount.String()),
 		)
 	}
+	endTime := ctx.BlockTime().Add(duration)
 	if err := k.TransferAmountToModuleAccount(ctx, sender, sdk.NewCoins(amount)); err != nil {
 		return err
 	}
-	streamPayment := types.NewStreamPayment(sender.String(), recipient.String(), amount, streamType, endTime, periods)
+	streamPayment := types.NewStreamPayment(
+		sender.String(),
+		recipient.String(),
+		amount,
+		streamType,
+		ctx.BlockTime(),
+		endTime,
+		periods,
+		cancellable,
+	)
 	pNum := k.GetNextStreamPaymentNumber(ctx)
 
 	// update stream payment
 	streamPayment.Id = types.StreamPaymentPrefix + fmt.Sprint(pNum)
-	streamPayment.StartTime = ctx.BlockTime()
 	streamPayment.StreamedAmount = sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(0))
 
 	k.SetStreamPayment(ctx, streamPayment)
@@ -115,8 +136,31 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 			fmt.Sprintf("stream payment %s is not cancellable", streamId),
 		)
 	}
+	if ctx.BlockTime().Unix() > streamPayment.EndTime.Unix() {
+		return sdkerrors.Wrapf(
+			sdkerrors.ErrUnauthorized,
+			fmt.Sprintf("ended stream payment cannot be canceled"),
+		)
+	}
+	streamedAmount := float64(0)
+	if streamPayment.StreamType == types.TypeContinuous {
+		streamedAmount = k.getStreamedAmount(ctx, streamPayment)
+	} else if streamPayment.StreamType == types.TypePeriodic {
+		streamedAmount = k.getStreamedAmountForPeriodicStreamPayment(ctx, streamPayment)
+	}
+	lastStreamedAmount := streamPayment.StreamedAmount
+	streamPayment.StreamedAmount.Amount = sdk.NewInt(int64(streamedAmount))
 	remainingAmount := streamPayment.TotalAmount.Sub(streamPayment.StreamedAmount)
+	// transfer remaining amount to sender
 	if err := k.TransferAmountFromModuleAccount(ctx, sender, sdk.NewCoins(remainingAmount)); err != nil {
+		return err
+	}
+	amountToRecipient := streamPayment.StreamedAmount.Sub(lastStreamedAmount)
+	recipient, _ := sdk.AccAddressFromBech32(streamPayment.Recipient)
+	// transfer streamed amount to recipient
+	if err := k.TransferAmountFromModuleAccount(
+		ctx, recipient, sdk.NewCoins(amountToRecipient),
+	); err != nil {
 		return err
 	}
 	k.RemoveStreamPayment(ctx, streamId)
@@ -126,8 +170,9 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 		ctx,
 		streamPayment.Id,
 		streamPayment.Sender,
+		remainingAmount,
 	)
-
+	k.emitStreamPaymentEndEvent(ctx, streamId, streamPayment.Sender)
 	return nil
 }
 
@@ -139,10 +184,11 @@ func (k Keeper) ClaimStreamedAmount(ctx sdk.Context, streamId string, claimer sd
 			fmt.Sprintf("no stream payment found with id %s", streamId),
 		)
 	}
-	if claimer.String() != streamPayment.Recipient {
+	claimerAddr := claimer.String()
+	if claimerAddr != streamPayment.Recipient {
 		return sdkerrors.Wrapf(
 			sdkerrors.ErrUnauthorized,
-			fmt.Sprintf("address %s is not allowed to claim the stream payment", streamId),
+			fmt.Sprintf("address %s is not allowed to claim the stream payment", claimerAddr),
 		)
 	}
 	if ctx.BlockTime().Unix() < streamPayment.StartTime.Unix() {
@@ -167,6 +213,11 @@ func (k Keeper) ClaimStreamedAmount(ctx sdk.Context, streamId string, claimer sd
 		if err := k.claimContinuousStreamPayment(ctx, streamPayment, claimer); err != nil {
 			return err
 		}
+	case types.TypePeriodic:
+		if err := k.claimPeriodicStreamPayment(ctx, streamPayment, claimer); err != nil {
+			return err
+		}
+
 	default:
 		return sdkerrors.Wrapf(
 			types.ErrInvalidStreamPaymentType,

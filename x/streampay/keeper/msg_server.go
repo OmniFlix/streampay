@@ -49,8 +49,9 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 		sender, recipient,
 		msg.Amount,
 		msg.StreamType,
-		msg.EndTime,
+		msg.Duration,
 		msg.Periods,
+		msg.Cancellable,
 	); err != nil {
 		return nil, err
 	}

@@ -13,5 +13,5 @@ type StreamPaymentI interface {
 	GetRecipient() string
 	GetStartTime() time.Time
 	GetEndTime() time.Time
-	GetTotalTransferred() sdk.Coin
+	GetStreamedAmount() sdk.Coin
 }

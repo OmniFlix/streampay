@@ -36,17 +36,12 @@ message StreamPayment {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
     (gogoproto.moretags) = "yaml:\"streamed_amount\""
   ];
-  cosmos.base.v1beta1.Coin claimed_amount = 11 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
-    (gogoproto.moretags) = "yaml:\"claimed_amount\""
-  ];
-  google.protobuf.Timestamp last_claimed_at = 12 [
+  google.protobuf.Timestamp last_claimed_at = 11 [
     (gogoproto.nullable) = false,
     (gogoproto.stdtime) = true,
     (gogoproto.moretags) = "yaml:\"last_claimed_at\""
   ];
-  StreamStatus status = 13;
+  StreamStatus status = 12;
 }
 
 enum StreamType {

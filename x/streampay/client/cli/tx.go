@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -61,20 +60,16 @@ func GetCmdStreamSend() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			endTime, err := cmd.Flags().GetString(FlagEndTime)
+			durationStr, err := cmd.Flags().GetString(FlagDuration)
 			if err != nil {
 				return err
 			}
-			if endTime == "" {
-				return fmt.Errorf("endtime is required")
-			}
-			endTimestamp, err := strconv.ParseInt(endTime, 10, 64)
+			duration, err := time.ParseDuration(durationStr)
 			if err != nil {
 				return err
 			}
-			etm := time.Unix(endTimestamp, 0)
-			if etm.Unix() <= time.Now().Unix() {
-				return fmt.Errorf("endtime should be in future")
+			if duration <= 0 {
+				return fmt.Errorf("duration should be a positive value")
 			}
 			delayed, err := cmd.Flags().GetBool(FlagDelayed)
 			if err != nil {
@@ -94,13 +89,32 @@ func GetCmdStreamSend() *cobra.Command {
 				if err != nil {
 					return err
 				}
+			} else {
+				periods = nil
 			}
 			cancellable, err := cmd.Flags().GetBool(FlagCancellable)
 			if err != nil {
 				return err
 			}
+			feeStr, err := cmd.Flags().GetString(FlagStreamPaymentFee)
+			if err != nil {
+				return err
+			}
+			fee, err := sdk.ParseCoinNormalized(feeStr)
+			if err != nil {
+				return err
+			}
 
-			msg := types.NewMsgStreamSend(sender.String(), recipient.String(), amount, _type, etm, periods, cancellable)
+			msg := types.NewMsgStreamSend(
+				sender.String(),
+				recipient.String(),
+				amount,
+				_type,
+				duration,
+				periods,
+				cancellable,
+				fee,
+			)
 
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -111,7 +125,8 @@ func GetCmdStreamSend() *cobra.Command {
 	}
 
 	cmd.Flags().AddFlagSet(FsStreamSend)
-	_ = cmd.MarkFlagRequired(FlagEndTime)
+	_ = cmd.MarkFlagRequired(FlagDuration)
+	_ = cmd.MarkFlagRequired(FlagStreamPaymentFee)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

@@ -23,18 +23,20 @@ func NewMsgStreamSend(
 	recipient string,
 	amount sdk.Coin,
 	_type StreamType,
-	endTime time.Time,
+	duration time.Duration,
 	periods []*Period,
 	cancellable bool,
+	fee sdk.Coin,
 ) *MsgStreamSend {
 	return &MsgStreamSend{
 		Sender:      sender,
 		Recipient:   recipient,
 		Amount:      amount,
 		StreamType:  _type,
-		EndTime:     endTime,
+		Duration:    duration,
 		Periods:     periods,
 		Cancellable: cancellable,
+		Fee:         fee,
 	}
 }
 
@@ -54,13 +56,16 @@ func (msg MsgStreamSend) ValidateBasic() error {
 	if err := validateAmount(msg.Amount); err != nil {
 		return err
 	}
-	if err := ValidateTimestamp(msg.EndTime); err != nil {
+	if err := ValidateDuration(msg.Duration); err != nil {
 		return err
 	}
 	if msg.StreamType == TypePeriodic {
-		if err := validatePeriods(msg.Periods, msg.Amount); err != nil {
+		if err := validatePeriods(msg.Periods, msg.Amount, msg.Duration); err != nil {
 			return err
 		}
+	}
+	if err := validateAmount(msg.Fee); err != nil {
+		return err
 	}
 	return validateStreamType(msg.StreamType)
 }

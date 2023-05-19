@@ -17,6 +17,7 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		StreamPayments:          []StreamPayment{},
 		NextStreamPaymentNumber: DefaultNextStreamPaymentNumber,
+		Params:                  DefaultParams(),
 	}
 }
 
@@ -33,5 +34,8 @@ func (gs GenesisState) Validate() error {
 		}
 	}
 
-	return ValidateNextStreamPaymentNumber(gs.NextStreamPaymentNumber)
+	if err := ValidateNextStreamPaymentNumber(gs.NextStreamPaymentNumber); err != nil {
+		return err
+	}
+	return validateStreamPaymentFee(gs.Params.StreamPaymentFee)
 }

@@ -11,5 +11,5 @@ option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 message GenesisState {
   repeated StreamPayment stream_payments      = 1 [(gogoproto.nullable) = false];
   uint64                 next_stream_payment_number = 2;
-  Params params                 = 3;
+  Params params                 = 3 [(gogoproto.nullable) = false];
 }
