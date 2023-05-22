@@ -10,6 +10,7 @@ type AccountKeeper interface {
 	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
 	GetModuleAccount(ctx sdk.Context, name string) authtypes.ModuleAccountI
 	GetModuleAddress(module string) sdk.AccAddress
+	SetModuleAccount(sdk.Context, authtypes.ModuleAccountI)
 }
 
 // BankKeeper Methods imported from bank should be defined here
