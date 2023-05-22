@@ -2,18 +2,15 @@ package types
 
 import (
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-var (
-	DefaultStreamPaymentFee = sdk.NewInt64Coin("uspay", 10_000_000) // 10SPAY
-)
+var DefaultStreamPaymentFee = sdk.NewInt64Coin("uspay", 10_000_000) // 10SPAY
 
-var (
-	ParamStoreKeyStreamPaymentFee = []byte("StreamPaymentFee")
-)
+var ParamStoreKeyStreamPaymentFee = []byte("StreamPaymentFee")
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 

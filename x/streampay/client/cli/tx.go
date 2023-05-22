@@ -183,7 +183,6 @@ func GetCmdClaimStreamedAmount() *cobra.Command {
 	}
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
-
 }
 
 func parsePeriods(filePath string) ([]*types.Period, error) {

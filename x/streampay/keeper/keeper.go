@@ -130,7 +130,7 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 			fmt.Sprintf("address %s is not allowed to stop the stream payment", streamId),
 		)
 	}
-	if streamPayment.Cancellable == false {
+	if !streamPayment.Cancellable {
 		return sdkerrors.Wrapf(
 			sdkerrors.ErrUnauthorized,
 			fmt.Sprintf("stream payment %s is not cancellable", streamId),
@@ -139,7 +139,7 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 	if ctx.BlockTime().Unix() > streamPayment.EndTime.Unix() {
 		return sdkerrors.Wrapf(
 			sdkerrors.ErrUnauthorized,
-			fmt.Sprintf("ended stream payment cannot be canceled"),
+			fmt.Sprintf("ended stream payment cannot be canceled, stream payment %s", streamId),
 		)
 	}
 	streamedAmount := float64(0)
@@ -208,7 +208,6 @@ func (k Keeper) ClaimStreamedAmount(ctx sdk.Context, streamId string, claimer sd
 		if err := k.claimDelayedStreamPayment(ctx, streamPayment, claimer); err != nil {
 			return err
 		}
-
 	case types.TypeContinuous:
 		if err := k.claimContinuousStreamPayment(ctx, streamPayment, claimer); err != nil {
 			return err
