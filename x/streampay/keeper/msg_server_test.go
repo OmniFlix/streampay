@@ -1,14 +1,14 @@
 package keeper_test
 
 import (
+	"time"
+
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"time"
 )
 
 // TestStreamSendMsg tests TypeMsgMint message is emitted on a successful mint
 func (suite *KeeperTestSuite) TestStreamSendMsg() {
-
 	for _, tc := range []struct {
 		sender                string
 		recipient             string

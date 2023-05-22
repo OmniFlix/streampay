@@ -2,8 +2,9 @@ package keeper
 
 import (
 	"fmt"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"time"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/tendermint/tendermint/libs/log"
 

@@ -2,8 +2,9 @@ package apptesting
 
 import (
 	"fmt"
-	"github.com/OmniFlix/streampay/app"
 	"time"
+
+	"github.com/OmniFlix/streampay/app"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
