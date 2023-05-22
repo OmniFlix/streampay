@@ -144,11 +144,15 @@ func setup(withGenesis bool, invCheckPeriod uint) (*StreamPayApp, GenesisState) 
 	return app, GenesisState{}
 }
 
-func genesisStateWithValSet(t *testing.T,
-	app *StreamPayApp, genesisState GenesisState,
-	valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount,
+func genesisStateWithValSet(
+	t *testing.T,
+	app *StreamPayApp,
+	genesisState GenesisState,
+	valSet *tmtypes.ValidatorSet,
+	genAccs []authtypes.GenesisAccount,
 	balances ...banktypes.Balance,
 ) GenesisState {
+	t.Helper()
 	// set genesis accounts
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)

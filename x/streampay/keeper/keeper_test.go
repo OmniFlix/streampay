@@ -15,8 +15,6 @@ type KeeperTestSuite struct {
 
 	queryClient types.QueryClient
 	msgServer   types.MsgServer
-	// defaultDenom is on the suite, as it depends on the creator test address.
-	defaultDenom string
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -33,26 +31,3 @@ func (suite *KeeperTestSuite) SetupTest() {
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 	suite.msgServer = keeper.NewMsgServerImpl(suite.App.StreamPayKeeper)
 }
-
-/**
-func (suite *KeeperTestSuite) TestCreateModuleAccount() {
-	app := suite.App
-
-	// remove module account
-	streamPayModuleAccount := app.AccountKeeper.GetAccount(suite.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
-	app.AccountKeeper.RemoveAccount(suite.Ctx, streamPayModuleAccount)
-
-	// ensure module account was removed
-	suite.Ctx = app.BaseApp.NewContext(false, tmproto.Header{})
-	streamPayModuleAccount = app.AccountKeeper.GetAccount(suite.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
-	suite.Require().Nil(streamPayModuleAccount)
-
-	// create module account
-	app.StreamPayKeeper.CreateModuleAccount(suite.Ctx)
-
-	// check that the module account is now initialized
-	streamPayModuleAccount = app.AccountKeeper.GetAccount(suite.Ctx, app.AccountKeeper.GetModuleAddress(types.ModuleName))
-	suite.Require().NotNil(streamPayModuleAccount)
-}
-
-*/
