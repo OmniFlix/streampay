@@ -34,7 +34,7 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			expectedMessageEvents: 1,
 		},
 	} {
-		suite.Run("valid case", func() {
+		suite.Run("create stream payment", func() {
 			ctx := suite.Ctx.WithEventManager(sdk.NewEventManager())
 			suite.Require().Equal(0, len(ctx.EventManager().Events()))
 			// Test stream send message
@@ -53,6 +53,75 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			)
 			// Ensure current number and type of event is emitted
 			suite.AssertEventEmitted(ctx, types.EventTypeCreateStreamPayment, tc.expectedMessageEvents)
+		})
+	}
+}
+
+func (suite *KeeperTestSuite) TestStopStreamMsg() {
+	suite.CreateDefaultStreamPayment(true)
+	for _, tc := range []struct {
+		streamId              string
+		sender                string
+		valid                 bool
+		expectedMessageEvents int
+	}{
+		{
+			streamId:              suite.defaultStreamPaymentId,
+			sender:                suite.TestAccs[0].String(),
+			valid:                 true,
+			expectedMessageEvents: 1,
+		},
+	} {
+		suite.Run("stop stream", func() {
+			ctx := suite.Ctx.WithEventManager(sdk.NewEventManager())
+			suite.Require().Equal(0, len(ctx.EventManager().Events()))
+			// Test stream send message
+			_, err := suite.msgServer.StopStream(
+				sdk.WrapSDKContext(ctx),
+				types.NewMsgStopStream(
+					tc.streamId,
+					tc.sender,
+				),
+			)
+			suite.Require().NoError(err)
+			// Ensure current number and type of event is emitted
+			suite.AssertEventEmitted(ctx, types.EventTypeStopStreamPayment, tc.expectedMessageEvents)
+			suite.AssertEventEmitted(ctx, types.EventTypeEndStreamPayment, tc.expectedMessageEvents)
+
+		})
+	}
+}
+
+func (suite *KeeperTestSuite) TestClaimStreamedAmountMsg() {
+	suite.CreateDefaultStreamPayment(false)
+	for _, tc := range []struct {
+		streamId              string
+		recipient             string
+		valid                 bool
+		expectedMessageEvents int
+	}{
+		{
+			streamId:              suite.defaultStreamPaymentId,
+			recipient:             suite.TestAccs[1].String(),
+			valid:                 true,
+			expectedMessageEvents: 1,
+		},
+	} {
+		suite.Run("claim streamed amount", func() {
+			ctx := suite.Ctx.WithEventManager(sdk.NewEventManager())
+			suite.Require().Equal(0, len(ctx.EventManager().Events()))
+			// Test stream send message
+			_, err := suite.msgServer.ClaimStreamedAmount(
+				sdk.WrapSDKContext(ctx),
+				types.NewMsgClaimStreamedAmount(
+					tc.streamId,
+					tc.recipient,
+				),
+			)
+			suite.Require().NoError(err)
+			// Ensure current number and type of event is emitted
+			suite.AssertEventEmitted(ctx, types.EventTypeClaimStreamedAmount, tc.expectedMessageEvents)
+
 		})
 	}
 }

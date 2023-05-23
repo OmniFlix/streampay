@@ -13,8 +13,9 @@ import (
 type KeeperTestSuite struct {
 	apptesting.KeeperTestHelper
 
-	queryClient types.QueryClient
-	msgServer   types.MsgServer
+	queryClient            types.QueryClient
+	msgServer              types.MsgServer
+	defaultStreamPaymentId string
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -30,4 +31,19 @@ func (suite *KeeperTestSuite) SetupTest() {
 
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 	suite.msgServer = keeper.NewMsgServerImpl(suite.App.StreamPayKeeper)
+}
+
+func (suite *KeeperTestSuite) CreateDefaultStreamPayment(cancellable bool) {
+	ctx := sdk.WrapSDKContext(suite.Ctx)
+	res, _ := suite.msgServer.StreamSend(ctx, &types.MsgStreamSend{
+		Sender:      suite.TestAccs[0].String(),
+		Recipient:   suite.TestAccs[1].String(),
+		Amount:      sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 100_000_000),
+		StreamType:  types.TypeContinuous,
+		Duration:    100,
+		Periods:     nil,
+		Cancellable: cancellable,
+		Fee:         sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 10_000_000),
+	})
+	suite.defaultStreamPaymentId = res.StreamId
 }

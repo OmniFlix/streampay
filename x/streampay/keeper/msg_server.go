@@ -45,7 +45,7 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 		return nil, err
 	}
 
-	if err := m.Keeper.CreateStreamPayment(
+	streamPaymentId, err := m.Keeper.CreateStreamPayment(
 		ctx,
 		sender, recipient,
 		msg.Amount,
@@ -53,11 +53,13 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 		msg.Duration,
 		msg.Periods,
 		msg.Cancellable,
-	); err != nil {
+	)
+	if err != nil {
 		return nil, err
 	}
-
-	return &types.MsgStreamSendResponse{}, nil
+	return &types.MsgStreamSendResponse{
+		StreamId: streamPaymentId,
+	}, nil
 }
 
 func (m msgServer) StopStream(goCtx context.Context, msg *types.MsgStopStream) (*types.MsgStopStreamResponse, error) {
