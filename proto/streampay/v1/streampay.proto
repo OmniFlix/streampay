@@ -1,0 +1,66 @@
+syntax = "proto3";
+package OmniFlix.streampay.v1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
+
+
+
+message StreamPayment {
+  string id = 1;
+  string sender = 2;
+  string recipient = 3;
+  cosmos.base.v1beta1.Coin total_amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.moretags) = "yaml:\"total_amount\""
+  ];
+  StreamType stream_type = 5 [(gogoproto.moretags) = "yaml:\"stream_type\""];
+  repeated Period periods = 6 [(gogoproto.nullable) = true];
+  bool cancellable = 7;
+  google.protobuf.Timestamp start_time = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true,
+    (gogoproto.moretags) = "yaml:\"start_time\""
+  ];
+  google.protobuf.Timestamp end_time = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true,
+    (gogoproto.moretags) = "yaml:\"end_time\""
+  ];
+  cosmos.base.v1beta1.Coin streamed_amount = 10 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.moretags) = "yaml:\"streamed_amount\""
+  ];
+  google.protobuf.Timestamp last_claimed_at = 11 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true,
+    (gogoproto.moretags) = "yaml:\"last_claimed_at\""
+  ];
+  StreamStatus status = 12;
+}
+
+enum StreamType {
+  option (gogoproto.goproto_enum_prefix) = false;
+
+  STREAM_PAYMENT_TYPE_DELAYED                   = 0 [(gogoproto.enumvalue_customname) = "TypeDelayed"];
+  STREAM_PAYMENT_TYPE_CONTINUOUS                = 1 [(gogoproto.enumvalue_customname) = "TypeContinuous"];
+  STREAM_PAYMENT_TYPE_PERIODIC                  = 2 [(gogoproto.enumvalue_customname) = "TypePeriodic"];
+}
+
+enum StreamStatus {
+  option (gogoproto.goproto_enum_prefix) = false;
+
+  STREAM_PAYMENT_STATUS_ACTIVE                  = 0 [(gogoproto.enumvalue_customname) = "StatusActive"];
+  STREAM_PAYMENT_STATUS_COMPLETED               = 1 [(gogoproto.enumvalue_customname) = "StatusCompleted"];
+  STREAM_PAYMENT_STATUS_CANCELLED               = 2 [(gogoproto.enumvalue_customname) = "StatusCancelled"];
+}
+
+message Period {
+  int64 amount     = 1 [(gogoproto.moretags) = "yaml:\"amount\""];
+  int64 duration   = 2 [(gogoproto.moretags) = "yaml:\"duration\""];
+}

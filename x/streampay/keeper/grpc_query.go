@@ -81,3 +81,16 @@ func (k Keeper) StreamingPayment(goCtx context.Context,
 
 	return &types.QueryStreamPaymentResponse{StreamPayment: &streamPayment}, nil
 }
+
+func (k Keeper) Params(goCtx context.Context,
+	req *types.QueryParamsRequest,
+) (*types.QueryParamsResponse, error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	params := k.GetParams(ctx)
+
+	return &types.QueryParamsResponse{Params: &params}, nil
+}

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math"
 
 	"github.com/OmniFlix/streampay/x/streampay/types"
@@ -92,97 +91,7 @@ func (k Keeper) GetAllStreamPayments(ctx sdk.Context) (streamPayments []types.St
 	return streamPayments
 }
 
-func (k Keeper) ProcessStreamPayments(ctx sdk.Context) {
-	logger := k.Logger(ctx)
-	logger.Info("Processing stream payments ..")
-
-	k.IterateStreamPayments(ctx, func(index int64, streamPayment types.StreamPayment) (stop bool) {
-		switch streamPayment.GetStreamType() {
-		case types.TypeDelayed:
-			if ctx.BlockTime().Unix() < streamPayment.EndTime.Unix() {
-				return false
-			}
-			if err := k.processDelayedStreamPayment(ctx, streamPayment); err != nil {
-				panic(err)
-			}
-			logger.Debug(
-				fmt.Sprintf(
-					"Transferred amount %s to %s", streamPayment.TotalAmount.String(), streamPayment.Recipient,
-				),
-			)
-			// Remove stream payment
-			k.RemoveStreamPayment(ctx, streamPayment.Id)
-
-			// Emit events
-			k.emitStreamPaymentTransferEvent(ctx, streamPayment.Id, streamPayment.Recipient, streamPayment.TotalAmount)
-			k.emitStreamPaymentEndEvent(ctx, streamPayment.Id, streamPayment.Sender)
-
-		case types.TypeContinuous:
-			if ctx.BlockTime().Unix() < streamPayment.StartTime.Unix() {
-				return false
-			}
-			if streamPayment.TotalTransferred.IsGTE(streamPayment.TotalAmount) {
-				k.RemoveStreamPayment(ctx, streamPayment.Id)
-				k.emitStreamPaymentEndEvent(ctx, streamPayment.Id, streamPayment.Sender)
-				return false
-			}
-			unlockedAmount := k.getUnlockedAmount(ctx, streamPayment)
-			amountToSend := int64(unlockedAmount) - streamPayment.TotalTransferred.Amount.Int64()
-			amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(amountToSend))
-
-			if amount.IsZero() || amount.IsNil() {
-				return false
-			}
-
-			logger.Debug(
-				fmt.Sprintf("Total unlocked amount %s for payment %s", amount.String(), streamPayment.Id),
-			)
-			if err := k.processContinuousStreamPayment(ctx, amount, streamPayment); err != nil {
-				panic(err)
-			}
-			logger.Debug(fmt.Sprintf("Transferred amount %s to %s", amount.String(), streamPayment.Recipient))
-			// update stream payment
-			streamPayment.TotalTransferred = streamPayment.TotalTransferred.Add(amount)
-			streamPayment.LastTransferredAt = ctx.BlockTime()
-			k.SetStreamPayment(ctx, streamPayment)
-			// emit events
-			k.emitStreamPaymentTransferEvent(ctx, streamPayment.Id, streamPayment.Recipient, amount)
-
-		default:
-			panic(fmt.Errorf("unknown error type"))
-		}
-
-		return false
-	})
-	logger.Info("Processed stream payments ..")
-}
-
-func (k Keeper) processDelayedStreamPayment(ctx sdk.Context, streamPayment types.StreamPayment) error {
-	recipient, err := sdk.AccAddressFromBech32(streamPayment.Recipient)
-	if err != nil {
-		return err
-	}
-	err = k.TransferAmountFromModuleAccount(ctx, recipient, sdk.NewCoins(streamPayment.TotalAmount))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (k Keeper) processContinuousStreamPayment(ctx sdk.Context, amount sdk.Coin, streamPayment types.StreamPayment) error {
-	recipient, err := sdk.AccAddressFromBech32(streamPayment.Recipient)
-	if err != nil {
-		return err
-	}
-	err = k.TransferAmountFromModuleAccount(ctx, recipient, sdk.NewCoins(amount))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (k Keeper) getUnlockedAmount(ctx sdk.Context, streamPayment types.StreamPayment) float64 {
+func (k Keeper) getStreamedAmount(ctx sdk.Context, streamPayment types.StreamPayment) float64 {
 	nowTime := ctx.BlockTime().Unix()
 	startTime := streamPayment.StartTime.Unix()
 	endTime := streamPayment.EndTime.Unix()
@@ -194,4 +103,20 @@ func (k Keeper) getUnlockedAmount(ctx sdk.Context, streamPayment types.StreamPay
 		percentage = math.Abs(float64(nowTime-startTime) / float64(endTime-startTime))
 	}
 	return float64(totalAmount) * percentage
+}
+
+func (k Keeper) getStreamedAmountForPeriodicStreamPayment(ctx sdk.Context, streamPayment types.StreamPayment) float64 {
+	streamedAmount := int64(0)
+	nowTime := ctx.BlockTime().Unix()
+	startTime := streamPayment.StartTime.Unix()
+	totalDuration := int64(0)
+	for _, period := range streamPayment.Periods {
+		totalDuration += period.Duration
+		if (startTime + totalDuration) <= nowTime {
+			streamedAmount += period.Amount
+		} else {
+			break
+		}
+	}
+	return float64(streamedAmount)
 }

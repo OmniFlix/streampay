@@ -38,8 +38,8 @@ func validateAmount(amount sdk.Coin) error {
 	return nil
 }
 
-func validateStreamType(_type PaymentType) error {
-	if !(_type == TypeDelayed || _type == TypeContinuous) {
+func validateStreamType(_type StreamType) error {
+	if !(_type == TypeDelayed || _type == TypeContinuous || _type == TypePeriodic) {
 		return sdkerrors.Wrapf(
 			ErrInvalidStreamPaymentType,
 			fmt.Sprintf("stream payment type %s is not valid", _type),
@@ -60,6 +60,39 @@ func ValidateTimestamp(t interface{}) error {
 	_, ok := t.(time.Time)
 	if !ok {
 		return sdkerrors.Wrapf(ErrInvalidTimestamp, "invalid timestamp: %T", t)
+	}
+	return nil
+}
+
+func ValidateDuration(d interface{}) error {
+	_, ok := d.(time.Duration)
+	if !ok {
+		return sdkerrors.Wrapf(ErrInvalidDuration, "invalid duration: %v", d)
+	}
+	return nil
+}
+
+func validatePeriods(periods []*Period, totalAmount sdk.Coin, totalDuration time.Duration) error {
+	if len(periods) == 0 {
+		return sdkerrors.Wrapf(ErrInvalidPeriods, "periods cannot be empty")
+	}
+	totalAmt := int64(0)
+	totalDur := int64(0)
+	for _, period := range periods {
+		if period.Amount < 1 {
+			return sdkerrors.Wrapf(ErrInvalidPeriods, "invalid period amount: %d", period.Amount)
+		}
+		if period.Duration < 1 {
+			return sdkerrors.Wrapf(ErrInvalidPeriods, "invalid period duration: %d", period.Duration)
+		}
+		totalAmt += period.Amount
+		totalDur += period.Duration
+	}
+	if totalAmt != totalAmount.Amount.Int64() {
+		return sdkerrors.Wrapf(ErrInvalidPeriods, "period amounts do not add up to total amount")
+	}
+	if totalDur != int64(totalDuration.Seconds()) {
+		return sdkerrors.Wrapf(ErrInvalidPeriods, "period durations do not add up to total duration")
 	}
 	return nil
 }

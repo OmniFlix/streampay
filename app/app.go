@@ -361,6 +361,8 @@ func NewStreamPayApp(
 
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.DistrKeeper,
+		app.GetSubspace(streampaytypes.ModuleName),
 	)
 	streampayModule := streampay.NewAppModule(appCodec, app.StreamPayKeeper)
 

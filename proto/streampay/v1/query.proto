@@ -3,7 +3,8 @@ package OmniFlix.streampay.v1;
 
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "streampay/streampay.proto";
+import "streampay/v1/streampay.proto";
+import "streampay/v1/params.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
@@ -11,10 +12,13 @@ option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 // Query defines the gRPC querier service.
 service Query {
   rpc StreamingPayments(QueryStreamPaymentsRequest) returns (QueryStreamPaymentsResponse) {
-    option (google.api.http).get = "/streaming-payments";
+    option (google.api.http).get = "/omniflix/streampay/v1/streaming-payments";
   }
   rpc StreamingPayment(QueryStreamPaymentRequest) returns (QueryStreamPaymentResponse) {
-    option (google.api.http).get = "/streaming-payments/{id}";
+    option (google.api.http).get = "/omniflix/streampay/v1/streaming-payments/{id}";
+  }
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/omniflix/streampay/v1/params";
   }
 }
 
@@ -38,4 +42,10 @@ message QueryStreamPaymentRequest {
 
 message QueryStreamPaymentResponse {
   StreamPayment stream_payment = 1;
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1;
 }

@@ -9,13 +9,24 @@ import (
 
 var _ proto.Message = &StreamPayment{}
 
-func NewStreamPayment(sender, recipient string, amount sdk.Coin, _type PaymentType, endTime time.Time) StreamPayment {
+func NewStreamPayment(
+	sender, recipient string,
+	amount sdk.Coin,
+	_type StreamType,
+	startTime time.Time,
+	endTime time.Time,
+	periods []*Period,
+	cancellable bool,
+) StreamPayment {
 	return StreamPayment{
 		Sender:      sender,
 		Recipient:   recipient,
 		TotalAmount: amount,
+		StartTime:   startTime,
 		EndTime:     endTime,
 		StreamType:  _type,
+		Periods:     periods,
+		Cancellable: cancellable,
 	}
 }
 

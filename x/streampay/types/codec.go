@@ -10,14 +10,16 @@ import (
 )
 
 const (
-	AminoTypeStreamSendMsg = "OmniFlix/streampay/MsgStreamSend"
-	AminoTypeStopStreamMsg = "OmniFlix/streampay/MsgStopStream"
-	AminoTypeStreamPayment = "OmniFlix/streampay/StreamPayment"
+	AminoTypeStreamSendMsg          = "OmniFlix/streampay/MsgStreamSend"
+	AminoTypeStopStreamMsg          = "OmniFlix/streampay/MsgStopStream"
+	AminoTypeClaimStreamedAmountMsg = "OmniFlix/streampay/MsgClaimStreamedAmount"
+	AminoTypeStreamPayment          = "OmniFlix/streampay/StreamPayment"
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgStreamSend{}, AminoTypeStreamSendMsg, nil)
 	cdc.RegisterConcrete(&MsgStopStream{}, AminoTypeStopStreamMsg, nil)
+	cdc.RegisterConcrete(&MsgClaimStreamedAmount{}, AminoTypeClaimStreamedAmountMsg, nil)
 
 	cdc.RegisterInterface((*exported.StreamPaymentI)(nil), nil)
 	cdc.RegisterConcrete(&StreamPayment{}, AminoTypeStreamPayment, nil)
@@ -27,6 +29,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgStreamSend{},
 		&MsgStopStream{},
+		&MsgClaimStreamedAmount{},
 	)
 
 	registry.RegisterImplementations((*exported.StreamPaymentI)(nil),

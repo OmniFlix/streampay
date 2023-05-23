@@ -22,36 +22,39 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc: "valid genesis state",
 			genState: &types.GenesisState{
-				StreamPaymentsList: []types.StreamPayment{
+				StreamPayments: []types.StreamPayment{
 					{
-						Id:               "sp1",
-						Sender:           "streampay1amnszjdguwlxaawqg9ey6axcyqk38vcevt5r7x",
-						Recipient:        "streampay12ecdcddd4rk0zhkazfvj6d37zwyhylhhp5fgu6",
-						StreamType:       types.TypeDelayed,
-						TotalAmount:      sdk.NewCoin("uspay", sdk.NewInt(1000000)),
-						TotalTransferred: sdk.NewCoin("uspay", sdk.ZeroInt()),
+						Id:             "sp1",
+						Sender:         "cosmos1amnszjdguwlxaawqg9ey6axcyqk38vcegm8zm5",
+						Recipient:      "cosmos12ecdcddd4rk0zhkazfvj6d37zwyhylhh9y6feg",
+						StreamType:     types.TypeDelayed,
+						TotalAmount:    sdk.NewCoin("uspay", sdk.NewInt(1000000)),
+						StreamedAmount: sdk.NewCoin("uspay", sdk.ZeroInt()),
 					},
 					{
-						Id:               "sp2",
-						Sender:           "streampay1amnszjdguwlxaawqg9ey6axcyqk38vcevt5r7x",
-						Recipient:        "streampay12ecdcddd4rk0zhkazfvj6d37zwyhylhhp5fgu6",
-						StreamType:       types.TypeContinuous,
-						LockHeight:       123456,
-						TotalAmount:      sdk.NewCoin("uspay", sdk.NewInt(1000000)),
-						TotalTransferred: sdk.NewCoin("uspay", sdk.ZeroInt()),
+						Id:             "sp2",
+						Sender:         "cosmos1amnszjdguwlxaawqg9ey6axcyqk38vcegm8zm5",
+						Recipient:      "cosmos12ecdcddd4rk0zhkazfvj6d37zwyhylhh9y6feg",
+						StreamType:     types.TypeContinuous,
+						TotalAmount:    sdk.NewCoin("uspay", sdk.NewInt(1000000)),
+						StreamedAmount: sdk.NewCoin("uspay", sdk.ZeroInt()),
 					},
 				},
+				NextStreamPaymentNumber: 3,
+				Params:                  types.DefaultParams(),
 			},
 			valid: true,
 		},
 		{
 			desc: "partial values",
 			genState: &types.GenesisState{
-				StreamPaymentsList: []types.StreamPayment{
+				StreamPayments: []types.StreamPayment{
 					{
 						Id: "sp1",
 					},
 				},
+				NextStreamPaymentNumber: 2,
+				Params:                  types.DefaultParams(),
 			},
 			valid: false,
 		},

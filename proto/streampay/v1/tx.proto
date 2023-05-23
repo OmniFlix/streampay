@@ -1,0 +1,52 @@
+syntax = "proto3";
+package OmniFlix.streampay.v1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+import "streampay/v1/streampay.proto";
+
+option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
+
+// Msg defines the Msg service.
+service Msg {
+  rpc StreamSend(MsgStreamSend) returns (MsgStreamSendResponse);
+  rpc StopStream(MsgStopStream) returns (MsgStopStreamResponse);
+  rpc ClaimStreamedAmount(MsgClaimStreamedAmount) returns (MsgClaimStreamedAmountResponse);
+}
+
+
+message MsgStreamSend {
+  string sender = 1;
+  string recipient = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  google.protobuf.Duration duration = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  StreamType stream_type = 5 [(gogoproto.moretags) = "yaml:\"stream_type\""];
+  repeated Period periods = 6 [(gogoproto.nullable) = true];
+  bool cancellable = 7;
+  cosmos.base.v1beta1.Coin fee = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+message MsgStreamSendResponse {}
+
+message MsgStopStream {
+  string stream_id = 1 [(gogoproto.moretags) = "yaml:\"stream_id\""];
+  string sender = 2;
+}
+
+message MsgStopStreamResponse {}
+
+message MsgClaimStreamedAmount {
+  string stream_id = 1 [(gogoproto.moretags) = "yaml:\"stream_id\""];
+  string claimer = 2;
+}
+
+message MsgClaimStreamedAmountResponse {}

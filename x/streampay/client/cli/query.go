@@ -25,8 +25,37 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		GetCmdQueryPaymentStreams(),
 		GetCmdQueryStreamPayment(),
+		GetCmdQueryParams(),
 	)
 
+	return cmd
+}
+
+func GetCmdQueryParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "params",
+		Long:    "Query the current streampay parameters information",
+		Example: fmt.Sprintf("$ %s query streampay params", version.AppName),
+		Args:    cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx, err := client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.Params(
+				context.Background(),
+				&types.QueryParamsRequest{},
+			)
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res.Params)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 
