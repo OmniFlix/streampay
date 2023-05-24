@@ -53,14 +53,20 @@ func (k Keeper) emitCreateStreamPaymentEvent(ctx sdk.Context,
 	)
 }
 
-func (k Keeper) emitStopStreamPaymentEvent(ctx sdk.Context, streamId, sender string, amount sdk.Coin) {
+func (k Keeper) emitStopStreamPaymentEvent(
+	ctx sdk.Context,
+	streamId, sender, recipient string,
+	returnedAmount, streamedAmount sdk.Coin,
+) {
 	ctx.EventManager().EmitEvents(
 		sdk.Events{
 			sdk.NewEvent(
 				types.EventTypeStopStreamPayment,
 				sdk.NewAttribute(types.EventAttributePaymentId, streamId),
 				sdk.NewAttribute(types.EventAttributeSender, sender),
-				sdk.NewAttribute(types.EventAttributeAmount, amount.String()),
+				sdk.NewAttribute(types.EventAttributeRecipient, recipient),
+				sdk.NewAttribute(types.EventAttributeReturnedAmount, returnedAmount.String()),
+				sdk.NewAttribute(types.EventAttributeStreamedAmount, streamedAmount.String()),
 			),
 		},
 	)
