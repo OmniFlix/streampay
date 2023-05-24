@@ -172,7 +172,9 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 		ctx,
 		streamPayment.Id,
 		streamPayment.Sender,
+		streamPayment.Recipient,
 		remainingAmount,
+		amountToRecipient,
 	)
 	k.emitStreamPaymentEndEvent(ctx, streamId, streamPayment.Sender)
 	return nil

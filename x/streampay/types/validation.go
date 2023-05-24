@@ -65,9 +65,12 @@ func ValidateTimestamp(t interface{}) error {
 }
 
 func ValidateDuration(d interface{}) error {
-	_, ok := d.(time.Duration)
+	duration, ok := d.(time.Duration)
 	if !ok {
 		return sdkerrors.Wrapf(ErrInvalidDuration, "invalid duration: %v", d)
+	}
+	if duration < 1 {
+		return sdkerrors.Wrapf(ErrInvalidDuration, "invalid duration: %v", duration)
 	}
 	return nil
 }

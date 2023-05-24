@@ -185,7 +185,6 @@ func (suite *KeeperTestSuite) TestStopStreamMsg() {
 			// Ensure current number and type of event is emitted
 			suite.AssertEventEmitted(ctx, types.EventTypeStopStreamPayment, tc.expectedMessageEvents)
 			suite.AssertEventEmitted(ctx, types.EventTypeEndStreamPayment, tc.expectedMessageEvents)
-
 		})
 	}
 }
@@ -227,7 +226,6 @@ func (suite *KeeperTestSuite) TestClaimStreamedAmountMsg() {
 			}
 			// Ensure current number and type of event is emitted
 			suite.AssertEventEmitted(ctx, types.EventTypeClaimStreamedAmount, tc.expectedMessageEvents)
-
 		})
 	}
 }
