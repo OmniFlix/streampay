@@ -35,6 +35,7 @@ message MsgStreamSend {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
 }
+
 message MsgStreamSendResponse {
   string stream_id = 1 [(gogoproto.moretags) = "yaml:\"stream_id\""];
 }

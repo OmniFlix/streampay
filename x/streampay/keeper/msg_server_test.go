@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/OmniFlix/streampay/x/streampay/types"
@@ -132,7 +131,6 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			if tc.valid {
 				suite.Require().NoError(err)
 			}
-			fmt.Println(tc)
 			// Ensure current number and type of event is emitted
 			suite.AssertEventEmitted(ctx, types.EventTypeCreateStreamPayment, tc.expectedMessageEvents)
 		})
