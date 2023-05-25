@@ -6,9 +6,19 @@ import (
 	"github.com/OmniFlix/streampay/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 func TestGenesisState_Validate(t *testing.T) {
+	// generate a private/public key pair and get the respective address
+	pk1 := ed25519.GenPrivKey().PubKey()
+	addr1 := sdk.AccAddress(pk1.Address())
+
+	pk2 := ed25519.GenPrivKey().PubKey()
+	addr2 := sdk.AccAddress(pk2.Address())
+
+	defaultAmount := sdk.NewInt64Coin(types.DefaultStreamPaymentFee.Denom, 100_000_000)
+
 	for _, tc := range []struct {
 		desc     string
 		genState *types.GenesisState
@@ -25,19 +35,19 @@ func TestGenesisState_Validate(t *testing.T) {
 				StreamPayments: []types.StreamPayment{
 					{
 						Id:             "sp1",
-						Sender:         "cosmos1amnszjdguwlxaawqg9ey6axcyqk38vcegm8zm5",
-						Recipient:      "cosmos12ecdcddd4rk0zhkazfvj6d37zwyhylhh9y6feg",
+						Sender:         addr1.String(),
+						Recipient:      addr2.String(),
 						StreamType:     types.TypeDelayed,
-						TotalAmount:    sdk.NewCoin("uspay", sdk.NewInt(1000000)),
-						StreamedAmount: sdk.NewCoin("uspay", sdk.ZeroInt()),
+						TotalAmount:    defaultAmount,
+						StreamedAmount: sdk.NewCoin(defaultAmount.Denom, sdk.ZeroInt()),
 					},
 					{
 						Id:             "sp2",
-						Sender:         "cosmos1amnszjdguwlxaawqg9ey6axcyqk38vcegm8zm5",
-						Recipient:      "cosmos12ecdcddd4rk0zhkazfvj6d37zwyhylhh9y6feg",
+						Sender:         addr1.String(),
+						Recipient:      addr2.String(),
 						StreamType:     types.TypeContinuous,
-						TotalAmount:    sdk.NewCoin("uspay", sdk.NewInt(1000000)),
-						StreamedAmount: sdk.NewCoin("uspay", sdk.ZeroInt()),
+						TotalAmount:    defaultAmount,
+						StreamedAmount: sdk.NewCoin(defaultAmount.Denom, sdk.ZeroInt()),
 					},
 				},
 				NextStreamPaymentNumber: 3,

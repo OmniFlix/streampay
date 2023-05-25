@@ -68,22 +68,22 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 	duration time.Duration,
 	periods []*types.Period,
 	cancellable bool,
-) error {
+) (string, error) {
 	if duration <= 0 {
-		return sdkerrors.Wrapf(
+		return "", sdkerrors.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("duration %s is not valid, should be a possitive value", duration.String()),
 		)
 	}
 	if amount.IsNil() || amount.IsNegative() || amount.IsZero() {
-		return sdkerrors.Wrapf(
+		return "", sdkerrors.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("amount %s is not valid format", amount.String()),
 		)
 	}
 	endTime := ctx.BlockTime().Add(duration)
 	if err := k.TransferAmountToModuleAccount(ctx, sender, sdk.NewCoins(amount)); err != nil {
-		return err
+		return "", err
 	}
 	streamPayment := types.NewStreamPayment(
 		sender.String(),
@@ -115,7 +115,7 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 		streamPayment.EndTime,
 	)
 
-	return nil
+	return streamPayment.Id, nil
 }
 
 func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.AccAddress) error {
@@ -172,7 +172,9 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 		ctx,
 		streamPayment.Id,
 		streamPayment.Sender,
+		streamPayment.Recipient,
 		remainingAmount,
+		amountToRecipient,
 	)
 	k.emitStreamPaymentEndEvent(ctx, streamId, streamPayment.Sender)
 	return nil
