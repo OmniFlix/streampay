@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/OmniFlix/streampay/app/params"
+	"github.com/OmniFlix/streampay/v2/app/params"
 	"github.com/cosmos/cosmos-sdk/std"
 )
 

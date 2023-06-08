@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/OmniFlix/streampay/x/streampay/exported"
+	"github.com/OmniFlix/streampay/v2/x/streampay/exported"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
