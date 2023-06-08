@@ -7,12 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/OmniFlix/streampay/docs"
+	"github.com/OmniFlix/streampay/v2/docs"
 	"github.com/cosmos/cosmos-sdk/simapp"
 
-	"github.com/OmniFlix/streampay/app/openapiconsole"
-	appparams "github.com/OmniFlix/streampay/app/params"
-	customAuthRest "github.com/OmniFlix/streampay/custom/auth/client/rest"
+	"github.com/OmniFlix/streampay/v2/app/openapiconsole"
+	appparams "github.com/OmniFlix/streampay/v2/app/params"
+	customAuthRest "github.com/OmniFlix/streampay/v2/custom/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -92,9 +92,9 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/OmniFlix/streampay/x/streampay"
-	streampaykeeper "github.com/OmniFlix/streampay/x/streampay/keeper"
-	streampaytypes "github.com/OmniFlix/streampay/x/streampay/types"
+	"github.com/OmniFlix/streampay/v2/x/streampay"
+	streampaykeeper "github.com/OmniFlix/streampay/v2/x/streampay/keeper"
+	streampaytypes "github.com/OmniFlix/streampay/v2/x/streampay/types"
 )
 
 const (

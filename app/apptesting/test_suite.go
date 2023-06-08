@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/OmniFlix/streampay/app"
+	"github.com/OmniFlix/streampay/v2/app"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"

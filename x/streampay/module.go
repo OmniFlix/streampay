@@ -11,9 +11,9 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/OmniFlix/streampay/x/streampay/client/cli"
-	"github.com/OmniFlix/streampay/x/streampay/keeper"
-	"github.com/OmniFlix/streampay/x/streampay/types"
+	"github.com/OmniFlix/streampay/v2/x/streampay/client/cli"
+	"github.com/OmniFlix/streampay/v2/x/streampay/keeper"
+	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"

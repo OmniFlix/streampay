@@ -3,8 +3,8 @@ package streampay
 import (
 	"fmt"
 
-	"github.com/OmniFlix/streampay/x/streampay/keeper"
-	"github.com/OmniFlix/streampay/x/streampay/types"
+	"github.com/OmniFlix/streampay/v2/x/streampay/keeper"
+	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
