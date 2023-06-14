@@ -14,7 +14,7 @@ import (
 
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd() *cobra.Command {
-	// Group marketplace queries under a subcommand
+	// Group streampay queries under a subcommand
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
@@ -59,7 +59,7 @@ func GetCmdQueryParams() *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryPaymentStreams implements the query payment streams command.
+// GetCmdQueryPaymentStreams implements the query stream payments command.
 func GetCmdQueryPaymentStreams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "stream-payments ",
