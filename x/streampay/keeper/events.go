@@ -47,7 +47,7 @@ func (k Keeper) emitCreateStreamPaymentEvent(ctx sdk.Context,
 				sdk.NewAttribute(types.EventAttributeRecipient, recipient),
 				sdk.NewAttribute(types.EventAttributeAmount, amount.String()),
 				sdk.NewAttribute(types.EventAttributePaymentType, paymentType),
-				sdk.NewAttribute(types.EventAttributeEndTime, endTime.String()),
+				sdk.NewAttribute(types.EventAttributeEndTime, endTime.Format(time.RFC3339)),
 			),
 		},
 	)
