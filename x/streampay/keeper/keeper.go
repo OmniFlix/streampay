@@ -6,7 +6,7 @@ import (
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/tendermint/tendermint/libs/log"
+	"github.com/cometbft/cometbft/libs/log"
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	"github.com/cosmos/cosmos-sdk/codec"
