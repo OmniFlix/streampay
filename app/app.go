@@ -2,12 +2,13 @@ package app
 
 import (
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/x/consensus"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/x/consensus"
 
 	"github.com/OmniFlix/streampay/v2/docs"
 
