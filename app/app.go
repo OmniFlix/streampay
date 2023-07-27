@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/x/consensus"
 	"io"
 	"net/http"
 	"os"
@@ -131,6 +132,7 @@ var (
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(getGovProposalHandlers()),
 		params.AppModuleBasic{},
+		consensus.AppModuleBasic{},
 		crisis.AppModuleBasic{},
 		slashing.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
@@ -248,12 +250,14 @@ func NewStreamPayApp(
 		slashingtypes.StoreKey,
 		govtypes.StoreKey,
 		paramstypes.StoreKey,
+		consensusparamtypes.StoreKey,
 		ibcexported.StoreKey,
 		upgradetypes.StoreKey,
 		feegrant.StoreKey,
 		evidencetypes.StoreKey,
 		ibctransfertypes.StoreKey,
 		capabilitytypes.StoreKey,
+		crisistypes.StoreKey,
 		streampaytypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -274,7 +278,11 @@ func NewStreamPayApp(
 
 	govModAddress := authtypes.NewModuleAddress(govtypes.ModuleName).String()
 	// set the BaseApp's parameter store
-	consensusparamkeeper.NewKeeper(appCodec, keys[consensusparamtypes.StoreKey], govModAddress)
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
+		appCodec,
+		keys[consensusparamtypes.StoreKey],
+		govModAddress,
+	)
 	bApp.SetParamStore(&app.ConsensusParamsKeeper)
 
 	// add capability keeper and ScopeToModule for ibc module
@@ -464,6 +472,7 @@ func NewStreamPayApp(
 		evidence.NewAppModule(app.EvidenceKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		consensus.NewAppModule(appCodec, app.ConsensusParamsKeeper),
 		transferModule,
 		streampayModule,
 	)
@@ -485,6 +494,7 @@ func NewStreamPayApp(
 		vestingtypes.ModuleName,
 		crisistypes.ModuleName,
 		paramstypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		genutiltypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
@@ -511,6 +521,7 @@ func NewStreamPayApp(
 		capabilitytypes.ModuleName,
 		evidencetypes.ModuleName,
 		paramstypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		streampaytypes.ModuleName,
 	)
 
@@ -536,6 +547,7 @@ func NewStreamPayApp(
 		vestingtypes.ModuleName,
 		upgradetypes.ModuleName,
 		paramstypes.ModuleName,
+		consensusparamtypes.ModuleName,
 		feegrant.ModuleName,
 		streampaytypes.ModuleName,
 	)

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"time"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -18,8 +19,8 @@ import (
 type (
 	Keeper struct {
 		cdc                codec.BinaryCodec
-		storeKey           sdk.StoreKey
-		memKey             sdk.StoreKey
+		storeKey           storetypes.StoreKey
+		memKey             storetypes.StoreKey
 		accountKeeper      types.AccountKeeper
 		bankKeeper         types.BankKeeper
 		distributionKeeper types.DistributionKeeper
@@ -30,7 +31,7 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
-	memKey sdk.StoreKey,
+	memKey storetypes.StoreKey,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	distributionKeeper types.DistributionKeeper,

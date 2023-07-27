@@ -3,8 +3,8 @@ package OmniFlix.streampay.v1;
 
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "streampay/v1/streampay.proto";
-import "streampay/v1/params.proto";
+import "OmniFlix/streampay/v1/streampay.proto";
+import "OmniFlix/streampay/v1/params.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
