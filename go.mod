@@ -1,6 +1,6 @@
 module github.com/OmniFlix/streampay/v2
 
-go 1.19
+go 1.20
 
 require (
 	github.com/cometbft/cometbft v0.37.2
