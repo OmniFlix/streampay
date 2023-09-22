@@ -74,6 +74,8 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=${APP_NAME} \
 
 ifeq (cleveldb,$(findstring cleveldb,$(STREAMPAY_BUILD_OPTIONS)))
   ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=cleveldb
+else ifeq (rocksdb,$(findstring rocksdb,$(STREAMPAY_BUILD_OPTIONS)))
+  ldflags += -X github.com/cosmos/cosmos-sdk/types.DBBackend=rocksdb
 endif
 ifeq (,$(findstring nostrip,$(STREAMPAY_BUILD_OPTIONS)))
   ldflags += -w -s
