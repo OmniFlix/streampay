@@ -14,7 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 type (
@@ -25,7 +24,7 @@ type (
 		accountKeeper      types.AccountKeeper
 		bankKeeper         types.BankKeeper
 		distributionKeeper types.DistributionKeeper
-		paramSpace         paramtypes.Subspace
+		authority          string
 	}
 )
 
@@ -36,17 +35,13 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	distributionKeeper types.DistributionKeeper,
-	ps paramtypes.Subspace,
+	authority string,
 ) *Keeper {
 	// ensure streampay module account is set
 	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
 
-	// set KeyTable if it has not already been set
-	if !ps.HasKeyTable() {
-		ps = ps.WithKeyTable(types.ParamKeyTable())
-	}
 	return &Keeper{
 		cdc:                cdc,
 		storeKey:           storeKey,
@@ -54,8 +49,13 @@ func NewKeeper(
 		accountKeeper:      accountKeeper,
 		bankKeeper:         bankKeeper,
 		distributionKeeper: distributionKeeper,
-		paramSpace:         ps,
+		authority:          authority,
 	}
+}
+
+// GetAuthority returns the x/streampay module's authority.
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {

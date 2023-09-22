@@ -16,7 +16,10 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	// set next payment number
 	k.SetNextStreamPaymentNumber(ctx, genState.NextStreamPaymentNumber)
 	// set params
-	k.SetParams(ctx, genState.Params)
+	err := k.SetParams(ctx, genState.Params)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis returns the capability module's exported genesis.
