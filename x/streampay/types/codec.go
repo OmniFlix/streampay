@@ -7,6 +7,7 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
+	authzcodec "github.com/cosmos/cosmos-sdk/x/authz/codec"
 )
 
 const (
@@ -14,15 +15,19 @@ const (
 	AminoTypeStopStreamMsg          = "OmniFlix/streampay/MsgStopStream"
 	AminoTypeClaimStreamedAmountMsg = "OmniFlix/streampay/MsgClaimStreamedAmount"
 	AminoTypeStreamPayment          = "OmniFlix/streampay/StreamPayment"
+	AminoTypeUpdateParamsMsg        = "OmniFlix/streampay/MsgUpdateParams"
+	AminoTypeParams                 = "OmniFlix/streampay/Params"
 )
 
-func RegisterCodec(cdc *codec.LegacyAmino) {
+func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgStreamSend{}, AminoTypeStreamSendMsg, nil)
 	cdc.RegisterConcrete(&MsgStopStream{}, AminoTypeStopStreamMsg, nil)
 	cdc.RegisterConcrete(&MsgClaimStreamedAmount{}, AminoTypeClaimStreamedAmountMsg, nil)
+	cdc.RegisterConcrete(&MsgUpdateParams{}, AminoTypeUpdateParamsMsg, nil)
 
 	cdc.RegisterInterface((*exported.StreamPaymentI)(nil), nil)
 	cdc.RegisterConcrete(&StreamPayment{}, AminoTypeStreamPayment, nil)
+	cdc.RegisterConcrete(&Params{}, AminoTypeParams, nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -31,6 +36,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgStreamSend{},
 		&MsgStopStream{},
 		&MsgClaimStreamedAmount{},
+		&MsgUpdateParams{},
 	)
 
 	registry.RegisterImplementations((*exported.StreamPaymentI)(nil),
@@ -46,7 +52,12 @@ var (
 )
 
 func init() {
-	RegisterCodec(amino)
+	RegisterLegacyAminoCodec(amino)
 	cryptocodec.RegisterCrypto(amino)
 	amino.Seal()
+
+	// Register all Amino interfaces and concrete types on the authz Amino codec
+	// so that this can later be used to properly serialize MsgGrant and MsgExec
+	// instances.
+	RegisterLegacyAminoCodec(authzcodec.Amino)
 }
