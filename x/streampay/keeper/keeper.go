@@ -4,16 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	"github.com/cometbft/cometbft/libs/log"
-
+	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 type (
@@ -72,13 +70,13 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 	cancellable bool,
 ) (string, error) {
 	if duration <= 0 {
-		return "", sdkerrors.Wrapf(
+		return "", errorsmod.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("duration %s is not valid, should be a possitive value", duration.String()),
 		)
 	}
 	if amount.IsNil() || amount.IsNegative() || amount.IsZero() {
-		return "", sdkerrors.Wrapf(
+		return "", errorsmod.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("amount %s is not valid format", amount.String()),
 		)
@@ -123,25 +121,25 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.AccAddress) error {
 	streamPayment, ok := k.GetStreamPayment(ctx, streamId)
 	if !ok {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			sdkerrors.ErrNotFound,
 			fmt.Sprintf("no stream payment found with id %s", streamId),
 		)
 	}
 	if sender.String() != streamPayment.Sender {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			sdkerrors.ErrUnauthorized,
 			fmt.Sprintf("address %s is not allowed to stop the stream payment", streamId),
 		)
 	}
 	if !streamPayment.Cancellable {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			sdkerrors.ErrUnauthorized,
 			fmt.Sprintf("stream payment %s is not cancellable", streamId),
 		)
 	}
 	if ctx.BlockTime().Unix() > streamPayment.EndTime.Unix() {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			sdkerrors.ErrUnauthorized,
 			fmt.Sprintf("ended stream payment cannot be canceled, stream payment %s", streamId),
 		)
@@ -185,26 +183,26 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 func (k Keeper) ClaimStreamedAmount(ctx sdk.Context, streamId string, claimer sdk.AccAddress) error {
 	streamPayment, ok := k.GetStreamPayment(ctx, streamId)
 	if !ok {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			sdkerrors.ErrNotFound,
 			fmt.Sprintf("no stream payment found with id %s", streamId),
 		)
 	}
 	claimerAddr := claimer.String()
 	if claimerAddr != streamPayment.Recipient {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			sdkerrors.ErrUnauthorized,
 			fmt.Sprintf("address %s is not allowed to claim the stream payment", claimerAddr),
 		)
 	}
 	if ctx.BlockTime().Unix() < streamPayment.StartTime.Unix() {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("stream payment %s is not started yet", streamId),
 		)
 	}
 	if streamPayment.StreamedAmount.IsGTE(streamPayment.TotalAmount) {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("stream payment %s is already fully claimed", streamId),
 		)
@@ -224,7 +222,7 @@ func (k Keeper) ClaimStreamedAmount(ctx sdk.Context, streamId string, claimer sd
 		}
 
 	default:
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrInvalidStreamPaymentType,
 			fmt.Sprintf("stream payment %s has invalid type", streamId),
 		)
@@ -234,7 +232,7 @@ func (k Keeper) ClaimStreamedAmount(ctx sdk.Context, streamId string, claimer sd
 
 func (k Keeper) claimDelayedStreamPayment(ctx sdk.Context, streamPayment types.StreamPayment, claimer sdk.AccAddress) error {
 	if ctx.BlockTime().Unix() < streamPayment.EndTime.Unix() {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("stream payment %s is delayed type and not ended yet", streamPayment.Id),
 		)
@@ -258,7 +256,7 @@ func (k Keeper) claimContinuousStreamPayment(ctx sdk.Context, streamPayment type
 	amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(amountToSend))
 
 	if amount.IsZero() || amount.IsNil() {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("no valid amount to claim for stream payment %s ", streamPayment.Id),
 		)
@@ -287,7 +285,7 @@ func (k Keeper) claimPeriodicStreamPayment(ctx sdk.Context, streamPayment types.
 	amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(amountToSend))
 
 	if amount.IsZero() || amount.IsNil() {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrInvalidAmount,
 			fmt.Sprintf("no valid amount to claim for stream payment %s ", streamPayment.Id),
 		)

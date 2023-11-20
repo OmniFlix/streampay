@@ -3,8 +3,8 @@ package types
 import (
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 var DefaultStreamPaymentFee = sdk.NewInt64Coin("uspay", 10_000_000) // 10SPAY
@@ -39,7 +39,7 @@ func validateStreamPaymentFee(i interface{}) error {
 	}
 
 	if !fee.IsValid() || fee.IsZero() {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidStreamPaymentFee,
 			"invalid fee amount %s, only accepts positive amounts",
 			fee.String(),
