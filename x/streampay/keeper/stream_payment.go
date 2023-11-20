@@ -6,7 +6,7 @@ import (
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
+	"github.com/cosmos/gogoproto/proto"
 )
 
 // GetNextStreamPaymentNumber get next stream payment number

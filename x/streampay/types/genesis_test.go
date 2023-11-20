@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
+	"github.com/cometbft/cometbft/crypto/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

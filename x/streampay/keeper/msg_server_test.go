@@ -227,3 +227,61 @@ func (suite *KeeperTestSuite) TestClaimStreamedAmountMsg() {
 		})
 	}
 }
+
+func (suite *KeeperTestSuite) TestUpdateParams() {
+	testCases := []struct {
+		name      string
+		request   *types.MsgUpdateParams
+		expectErr bool
+	}{
+		{
+			name: "set invalid authority",
+			request: &types.MsgUpdateParams{
+				Authority: "foo",
+			},
+			expectErr: true,
+		},
+		{
+			name: "set invalid payment fee param",
+			request: &types.MsgUpdateParams{
+				Authority: suite.App.StreamPayKeeper.GetAuthority(),
+				Params: types.Params{
+					StreamPaymentFee: sdk.NewCoin("foo", sdk.ZeroInt()),
+				},
+			},
+			expectErr: true,
+		},
+		{
+			name: "set invalid payment gee",
+			request: &types.MsgUpdateParams{
+				Authority: suite.App.StreamPayKeeper.GetAuthority(),
+				Params: types.Params{
+					StreamPaymentFee: sdk.Coin{},
+				},
+			},
+			expectErr: true,
+		},
+		{
+			name: "set full valid params",
+			request: &types.MsgUpdateParams{
+				Authority: suite.App.StreamPayKeeper.GetAuthority(),
+				Params: types.Params{
+					StreamPaymentFee: types.DefaultStreamPaymentFee,
+				},
+			},
+			expectErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		suite.Run(tc.name, func() {
+			_, err := suite.msgServer.UpdateParams(suite.Ctx, tc.request)
+			if tc.expectErr {
+				suite.Require().Error(err)
+			} else {
+				suite.Require().NoError(err)
+			}
+		})
+	}
+}

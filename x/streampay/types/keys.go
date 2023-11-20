@@ -23,6 +23,8 @@ const (
 var (
 	PrefixPaymentStreamId    = []byte{0x01}
 	PrefixPaymentStreamCount = []byte{0x02}
+
+	ParamsKey = []byte{0x03}
 )
 
 func KeyPrefixSteamPayment(p string) []byte {

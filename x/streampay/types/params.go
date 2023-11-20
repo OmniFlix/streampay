@@ -3,21 +3,11 @@ package types
 import (
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
 var DefaultStreamPaymentFee = sdk.NewInt64Coin("uspay", 10_000_000) // 10SPAY
-
-var ParamStoreKeyStreamPaymentFee = []byte("StreamPaymentFee")
-
-var _ paramtypes.ParamSet = (*Params)(nil)
-
-// ParamKeyTable returns the parameter key table.
-func ParamKeyTable() paramtypes.KeyTable {
-	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
-}
 
 func NewStreampayParams(streamPaymentFee sdk.Coin) Params {
 	return Params{
@@ -30,13 +20,6 @@ func DefaultParams() Params {
 	return NewStreampayParams(
 		DefaultStreamPaymentFee,
 	)
-}
-
-// ParamSetPairs returns the parameter set pairs.
-func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
-	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(ParamStoreKeyStreamPaymentFee, &p.StreamPaymentFee, validateStreamPaymentFee),
-	}
 }
 
 // ValidateBasic performs basic validation on streampay parameters.
@@ -56,7 +39,7 @@ func validateStreamPaymentFee(i interface{}) error {
 	}
 
 	if !fee.IsValid() || fee.IsZero() {
-		return sdkerrors.Wrapf(
+		return errorsmod.Wrapf(
 			ErrInvalidStreamPaymentFee,
 			"invalid fee amount %s, only accepts positive amounts",
 			fee.String(),

@@ -66,3 +66,51 @@ func (suite *KeeperTestSuite) CreateStreamPayment(streamType types.StreamType, c
 	})
 	return res.StreamId
 }
+
+func (suite *KeeperTestSuite) TestParams() {
+	testCases := []struct {
+		name      string
+		input     types.Params
+		expectErr bool
+	}{
+		{
+			name: "set invalid fee",
+			input: types.Params{
+				StreamPaymentFee: sdk.Coin{},
+			},
+			expectErr: true,
+		},
+		{
+			name: "set invalid fee",
+			input: types.Params{
+				StreamPaymentFee: sdk.NewCoin("foo", sdk.ZeroInt()),
+			},
+			expectErr: true,
+		},
+		{
+			name: "set full valid params",
+			input: types.Params{
+				StreamPaymentFee: types.DefaultStreamPaymentFee,
+			},
+			expectErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+
+		suite.Run(tc.name, func() {
+			expected := suite.App.StreamPayKeeper.GetParams(suite.Ctx)
+			err := suite.App.StreamPayKeeper.SetParams(suite.Ctx, tc.input)
+			if tc.expectErr {
+				suite.Require().Error(err)
+			} else {
+				expected = tc.input
+				suite.Require().NoError(err)
+			}
+
+			p := suite.App.StreamPayKeeper.GetParams(suite.Ctx)
+			suite.Require().Equal(expected, p)
+		})
+	}
+}
