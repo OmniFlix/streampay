@@ -4,19 +4,8 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/stretchr/testify/require"
 )
-
-func TestParamKeyTable(t *testing.T) {
-	require.IsType(t, paramtypes.KeyTable{}, ParamKeyTable())
-	require.NotEmpty(t, ParamKeyTable())
-}
-
-func TestParamSetPairs(t *testing.T) {
-	params := DefaultParams()
-	require.NotEmpty(t, params.ParamSetPairs())
-}
 
 func TestParams_ValidateBasic(t *testing.T) {
 	testCases := []struct {
@@ -25,7 +14,9 @@ func TestParams_ValidateBasic(t *testing.T) {
 		expError bool
 	}{
 		{"default params", DefaultParams(), false},
-		{"invalid stream fee", Params{StreamPaymentFee: sdk.NewCoin("uspay", sdk.ZeroInt())}, true},
+		{"valid params", Params{StreamPaymentFeePercentage: sdk.NewDec(0)}, false},
+		{"invalid stream fee percentage", Params{StreamPaymentFeePercentage: sdk.NewDec(1)}, true},
+		{"invalid stream fee percentage", Params{StreamPaymentFeePercentage: sdk.NewDec(-1)}, true},
 	}
 	for _, tc := range testCases {
 		err := tc.params.ValidateBasic()

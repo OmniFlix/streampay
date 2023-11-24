@@ -25,9 +25,8 @@ func TestKeeperTestSuite(t *testing.T) {
 func (suite *KeeperTestSuite) SetupTest() {
 	suite.Setup()
 	fundAccsAmount := sdk.NewCoins(
-		sdk.NewCoin(
-			types.DefaultParams().StreamPaymentFee.Denom,
-			types.DefaultParams().StreamPaymentFee.Amount.MulRaw(1000)))
+		sdk.NewCoin("uspay", sdk.NewInt(10_000_000_000)),
+	)
 	for _, acc := range suite.TestAccs {
 		suite.FundAcc(acc, fundAccsAmount)
 	}
@@ -42,12 +41,11 @@ func (suite *KeeperTestSuite) CreateDefaultStreamPayment(cancellable bool) {
 	res, _ := suite.msgServer.StreamSend(ctx, &types.MsgStreamSend{
 		Sender:      suite.TestAccs[0].String(),
 		Recipient:   suite.TestAccs[1].String(),
-		Amount:      sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 100_000_000),
+		Amount:      sdk.NewInt64Coin("uspay", 100_000_000),
 		StreamType:  types.TypeContinuous,
 		Duration:    100,
 		Periods:     nil,
 		Cancellable: cancellable,
-		Fee:         sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 10_000_000),
 	})
 	suite.defaultStreamPaymentId = res.StreamId
 }
@@ -57,12 +55,11 @@ func (suite *KeeperTestSuite) CreateStreamPayment(streamType types.StreamType, c
 	res, _ := suite.msgServer.StreamSend(ctx, &types.MsgStreamSend{
 		Sender:      suite.TestAccs[0].String(),
 		Recipient:   suite.TestAccs[1].String(),
-		Amount:      sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 100_000_000),
+		Amount:      sdk.NewInt64Coin("uspay", 100_000_000),
 		StreamType:  streamType,
 		Duration:    100,
 		Periods:     nil,
 		Cancellable: cancellable,
-		Fee:         sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 10_000_000),
 	})
 	return res.StreamId
 }
@@ -76,21 +73,21 @@ func (suite *KeeperTestSuite) TestParams() {
 		{
 			name: "set invalid fee",
 			input: types.Params{
-				StreamPaymentFee: sdk.Coin{},
+				StreamPaymentFeePercentage: sdk.NewDec(1),
 			},
 			expectErr: true,
 		},
 		{
 			name: "set invalid fee",
 			input: types.Params{
-				StreamPaymentFee: sdk.NewCoin("foo", sdk.ZeroInt()),
+				StreamPaymentFeePercentage: sdk.NewDec(-1),
 			},
 			expectErr: true,
 		},
 		{
 			name: "set full valid params",
 			input: types.Params{
-				StreamPaymentFee: types.DefaultStreamPaymentFee,
+				StreamPaymentFeePercentage: types.DefaultStreamPaymentFeePercentage,
 			},
 			expectErr: false,
 		},

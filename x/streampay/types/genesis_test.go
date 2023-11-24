@@ -17,7 +17,7 @@ func TestGenesisState_Validate(t *testing.T) {
 	pk2 := ed25519.GenPrivKey().PubKey()
 	addr2 := sdk.AccAddress(pk2.Address())
 
-	defaultAmount := sdk.NewInt64Coin(types.DefaultStreamPaymentFee.Denom, 100_000_000)
+	defaultAmount := sdk.NewInt64Coin("uspay", 100_000_000)
 
 	for _, tc := range []struct {
 		desc     string

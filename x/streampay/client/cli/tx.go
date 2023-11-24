@@ -123,14 +123,6 @@ func GetCmdStreamSend() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			feeStr, err := cmd.Flags().GetString(FlagStreamPaymentFee)
-			if err != nil {
-				return err
-			}
-			fee, err := sdk.ParseCoinNormalized(feeStr)
-			if err != nil {
-				return err
-			}
 
 			msg := types.NewMsgStreamSend(
 				sender.String(),
@@ -140,7 +132,6 @@ func GetCmdStreamSend() *cobra.Command {
 				duration,
 				periods,
 				cancellable,
-				fee,
 			)
 
 			if err := msg.ValidateBasic(); err != nil {
@@ -153,7 +144,6 @@ func GetCmdStreamSend() *cobra.Command {
 
 	cmd.Flags().AddFlagSet(FsStreamSend)
 	_ = cmd.MarkFlagRequired(FlagDuration)
-	_ = cmd.MarkFlagRequired(FlagStreamPaymentFee)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

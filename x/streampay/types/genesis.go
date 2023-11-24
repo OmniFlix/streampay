@@ -37,5 +37,5 @@ func (gs GenesisState) Validate() error {
 	if err := ValidateNextStreamPaymentNumber(gs.NextStreamPaymentNumber); err != nil {
 		return err
 	}
-	return validateStreamPaymentFee(gs.Params.StreamPaymentFee)
+	return gs.Params.ValidateBasic()
 }

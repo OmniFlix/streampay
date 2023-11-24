@@ -7,24 +7,24 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var DefaultStreamPaymentFee = sdk.NewInt64Coin("uspay", 10_000_000) // 10SPAY
+var DefaultStreamPaymentFeePercentage = sdk.NewDecWithPrec(1, 2) // 1%
 
-func NewStreampayParams(streamPaymentFee sdk.Coin) Params {
+func NewStreampayParams(streamPaymentFeePercentage sdk.Dec) Params {
 	return Params{
-		StreamPaymentFee: streamPaymentFee,
+		StreamPaymentFeePercentage: streamPaymentFeePercentage,
 	}
 }
 
 // DefaultParams returns default streampay parameters
 func DefaultParams() Params {
 	return NewStreampayParams(
-		DefaultStreamPaymentFee,
+		DefaultStreamPaymentFeePercentage,
 	)
 }
 
 // ValidateBasic performs basic validation on streampay parameters.
 func (p Params) ValidateBasic() error {
-	if err := validateStreamPaymentFee(p.StreamPaymentFee); err != nil {
+	if err := validateStreamPaymentFeePercentage(p.StreamPaymentFeePercentage); err != nil {
 		return err
 	}
 	return nil
@@ -32,16 +32,16 @@ func (p Params) ValidateBasic() error {
 
 // validateStreamPaymentFee performs validation of stream payment fee
 
-func validateStreamPaymentFee(i interface{}) error {
-	fee, ok := i.(sdk.Coin)
+func validateStreamPaymentFeePercentage(i interface{}) error {
+	fee, ok := i.(sdk.Dec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if !fee.IsValid() || fee.IsZero() {
+	if fee.IsNegative() || fee.GTE(sdk.OneDec()) {
 		return errorsmod.Wrapf(
 			ErrInvalidStreamPaymentFee,
-			"invalid fee amount %s, only accepts positive amounts",
+			"invalid fee percentage %s, only accepts value which is positive and less than 1.00",
 			fee.String(),
 		)
 	}

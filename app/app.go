@@ -439,7 +439,7 @@ func NewStreamPayApp(
 		app.DistrKeeper,
 		govModAddress,
 	)
-	streampayModule := streampay.NewAppModule(appCodec, app.StreamPayKeeper, app.GetSubspace(streampaytypes.ModuleName))
+	streampayModule := streampay.NewAppModule(appCodec, app.StreamPayKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
