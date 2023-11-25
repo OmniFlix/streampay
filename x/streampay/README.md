@@ -91,10 +91,6 @@ message MsgStreamSend {
   StreamType stream_type = 5 [(gogoproto.moretags) = "yaml:\"stream_type\""];
   repeated Period periods = 6 [(gogoproto.nullable) = true];
   bool cancellable = 7;
-  cosmos.base.v1beta1.Coin fee = 8 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
-  ];
 }
 ```
 ### Stop Stream / Cancel Stream

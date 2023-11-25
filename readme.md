@@ -14,8 +14,8 @@ Try the app on - https://sp.OmniFlix.network
 
 | Requirement | Notes                                |
 |-------------|--------------------------------------|
-| Go version  | [Go1.19](https://go.dev/doc/install) |
-| Cosmos SDK  | v0.45.15                             |
+| Go version  | [Go1.21](https://go.dev/doc/install) |
+| Cosmos SDK  | v0.47.5                              |
 
 ### Get source code & Install
 
