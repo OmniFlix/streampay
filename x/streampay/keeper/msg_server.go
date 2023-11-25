@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
@@ -47,21 +46,18 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 	if err != nil {
 		return nil, err
 	}
-	fee := m.Keeper.GetStreamPaymentFee(ctx)
-	if !msg.Fee.Equal(fee) {
-		return nil, errorsmod.Wrapf(
-			types.ErrInvalidFee,
-			fmt.Sprintf("fee must be %s", fee.String()),
-		)
-	}
-	if err := m.distributionKeeper.FundCommunityPool(ctx, sdk.NewCoins(msg.Fee), sender); err != nil {
+	feePercentage := m.Keeper.GetStreamPaymentFeePercentage(ctx)
+	feeAmount := sdk.NewCoin(msg.Amount.Denom, msg.Amount.Amount.ToLegacyDec().Mul(feePercentage).TruncateInt())
+	amountToSend := msg.Amount.SubAmount(feeAmount.Amount)
+
+	if err := m.distributionKeeper.FundCommunityPool(ctx, sdk.NewCoins(feeAmount), sender); err != nil {
 		return nil, err
 	}
 
 	streamPaymentId, err := m.Keeper.CreateStreamPayment(
 		ctx,
 		sender, recipient,
-		msg.Amount,
+		amountToSend,
 		msg.StreamType,
 		msg.Duration,
 		msg.Periods,

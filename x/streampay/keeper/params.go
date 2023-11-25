@@ -30,8 +30,8 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) error {
 	return nil
 }
 
-// GetStreamPaymentFee returns the current stream payment fee.
-func (k Keeper) GetStreamPaymentFee(ctx sdk.Context) sdk.Coin {
+// GetStreamPaymentFeePercentage returns the current stream payment fee.
+func (k Keeper) GetStreamPaymentFeePercentage(ctx sdk.Context) sdk.Dec {
 	params := k.GetParams(ctx)
-	return params.StreamPaymentFee
+	return params.StreamPaymentFeePercentage
 }

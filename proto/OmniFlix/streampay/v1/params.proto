@@ -10,9 +10,9 @@ option (gogoproto.goproto_getters_all) = false;
 
 
 message Params {
-  cosmos.base.v1beta1.Coin     stream_payment_fee = 1 [
-    (gogoproto.moretags) = "yaml:\"stream_payment_fee\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin",
+  string  stream_payment_fee_percentage = 1 [
+    (gogoproto.moretags) = "yaml:\"stream_payment_fee_percentage\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
   ];
 }

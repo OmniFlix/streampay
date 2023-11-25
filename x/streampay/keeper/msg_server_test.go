@@ -17,50 +17,35 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 		duration              time.Duration
 		periods               []*types.Period
 		cancellable           bool
-		fee                   sdk.Coin
 		valid                 bool
 		expectedMessageEvents int
 	}{
 		{
 			sender:                suite.TestAccs[0].String(),
 			recipient:             suite.TestAccs[1].String(),
-			amount:                sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 100_000_000),
+			amount:                sdk.NewInt64Coin("uspay", 100_000_000),
 			streamType:            types.TypeContinuous,
 			duration:              time.Second * 100,
 			periods:               nil,
 			cancellable:           false,
-			fee:                   sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 10_000_000),
 			valid:                 true,
 			expectedMessageEvents: 1,
 		},
 		{
 			sender:                suite.TestAccs[0].String(),
 			recipient:             suite.TestAccs[1].String(),
-			amount:                sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 10_000_000),
-			streamType:            types.TypeContinuous,
-			duration:              time.Second * 100,
-			periods:               nil,
-			cancellable:           false,
-			fee:                   sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 1_000_000),
-			valid:                 false,
-			expectedMessageEvents: 0,
-		},
-		{
-			sender:                suite.TestAccs[0].String(),
-			recipient:             suite.TestAccs[1].String(),
-			amount:                sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 100_000_000),
+			amount:                sdk.NewInt64Coin("uspay", 100_000_000),
 			streamType:            types.TypeDelayed,
 			duration:              time.Second * 100,
 			periods:               nil,
 			cancellable:           false,
-			fee:                   sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 10_000_000),
 			valid:                 true,
 			expectedMessageEvents: 1,
 		},
 		{
 			sender:     suite.TestAccs[0].String(),
 			recipient:  suite.TestAccs[1].String(),
-			amount:     sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 100_000_000),
+			amount:     sdk.NewInt64Coin("uspay", 100_000_000),
 			streamType: types.TypePeriodic,
 			duration:   time.Second * 100,
 			periods: []*types.Period{
@@ -106,7 +91,6 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 				},
 			},
 			cancellable:           true,
-			fee:                   sdk.NewInt64Coin(types.DefaultParams().StreamPaymentFee.Denom, 10_000_000),
 			valid:                 true,
 			expectedMessageEvents: 1,
 		},
@@ -125,7 +109,6 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 					tc.duration,
 					tc.periods,
 					tc.cancellable,
-					tc.fee,
 				),
 			)
 			if tc.valid {
@@ -246,7 +229,7 @@ func (suite *KeeperTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: suite.App.StreamPayKeeper.GetAuthority(),
 				Params: types.Params{
-					StreamPaymentFee: sdk.NewCoin("foo", sdk.ZeroInt()),
+					StreamPaymentFeePercentage: sdk.NewDec(1),
 				},
 			},
 			expectErr: true,
@@ -256,7 +239,7 @@ func (suite *KeeperTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: suite.App.StreamPayKeeper.GetAuthority(),
 				Params: types.Params{
-					StreamPaymentFee: sdk.Coin{},
+					StreamPaymentFeePercentage: sdk.NewDecWithPrec(-5, 2),
 				},
 			},
 			expectErr: true,
@@ -266,7 +249,7 @@ func (suite *KeeperTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: suite.App.StreamPayKeeper.GetAuthority(),
 				Params: types.Params{
-					StreamPaymentFee: types.DefaultStreamPaymentFee,
+					StreamPaymentFeePercentage: types.DefaultStreamPaymentFeePercentage,
 				},
 			},
 			expectErr: false,

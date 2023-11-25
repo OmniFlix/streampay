@@ -31,12 +31,11 @@ func TestMsgStreamSend(t *testing.T) {
 		validMsg := *types.NewMsgStreamSend(
 			addr1.String(),
 			addr2.String(),
-			sdk.NewInt64Coin(types.DefaultStreamPaymentFee.Denom, 100_000_000),
+			sdk.NewInt64Coin("uspay", 100_000_000),
 			streamType,
 			time.Second*100,
 			periods,
 			false,
-			sdk.NewInt64Coin(types.DefaultStreamPaymentFee.Denom, 10_000_000),
 		)
 
 		return after(validMsg)

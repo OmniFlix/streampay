@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/client/cli"
-	"github.com/OmniFlix/streampay/v2/x/streampay/exported"
 	"github.com/OmniFlix/streampay/v2/x/streampay/keeper"
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -30,7 +29,7 @@ var (
 // ----------------------------------------------------------------------------
 
 // ConsensusVersion defines the current x/marketplace module consensus version.
-const ConsensusVersion = 3
+const ConsensusVersion = 2
 
 // AppModuleBasic implements the AppModuleBasic interface for the capability module.
 type AppModuleBasic struct {
@@ -98,15 +97,13 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper         keeper.Keeper
-	legacySubspace exported.Subspace
+	keeper keeper.Keeper
 }
 
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ss exported.Subspace) AppModule {
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         keeper,
-		legacySubspace: ss,
 	}
 }
 
@@ -121,13 +118,8 @@ func (AppModule) QuerierRoute() string { return types.QuerierRoute }
 // RegisterServices registers a GRPC query service to respond to the
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
-	// x/params migration
-	m := keeper.NewMigrator(am.keeper, am.legacySubspace)
-
-	if err := cfg.RegisterMigration(types.ModuleName, 2, m.Migrate2to3); err != nil {
-		panic(fmt.Sprintf("failed to migrate x/%s from version 2 to 3: %v", types.ModuleName, err))
-	}
 }
 
 // RegisterInvariants registers the capability module's invariants.
