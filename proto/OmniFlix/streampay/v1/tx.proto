@@ -2,6 +2,7 @@ syntax = "proto3";
 package OmniFlix.streampay.v1;
 
 import "cosmos/msg/v1/msg.proto";
+import "amino/amino.proto";
 import "OmniFlix/streampay/v1/params.proto";
 import "cosmos_proto/cosmos.proto";
 import "cosmos/base/v1beta1/coin.proto";
@@ -13,6 +14,8 @@ option go_package = "github.com/OmniFlix/streampay/x/streampay/types";
 
 // Msg defines the Msg service.
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+
   rpc StreamSend(MsgStreamSend) returns (MsgStreamSendResponse);
   rpc StopStream(MsgStopStream) returns (MsgStopStreamResponse);
   rpc ClaimStreamedAmount(MsgClaimStreamedAmount) returns (MsgClaimStreamedAmountResponse);
@@ -26,6 +29,10 @@ service Msg {
 
 
 message MsgStreamSend {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "OmniFlix/streampay/MsgStreamSend";
+  option (gogoproto.equal)      = false;
+
   string sender = 1;
   string recipient = 2;
   cosmos.base.v1beta1.Coin amount = 3 [
@@ -46,6 +53,10 @@ message MsgStreamSendResponse {
 }
 
 message MsgStopStream {
+  option (cosmos.msg.v1.signer) = "sender";
+  option (amino.name)           = "OmniFlix/streampay/MsgStopStream";
+  option (gogoproto.equal)      = false;
+
   string stream_id = 1 [(gogoproto.moretags) = "yaml:\"stream_id\""];
   string sender = 2;
 }
@@ -53,6 +64,10 @@ message MsgStopStream {
 message MsgStopStreamResponse {}
 
 message MsgClaimStreamedAmount {
+  option (cosmos.msg.v1.signer) = "claimer";
+  option (amino.name)           = "OmniFlix/streampay/MsgClaimStream";
+  option (gogoproto.equal)      = false;
+
   string stream_id = 1 [(gogoproto.moretags) = "yaml:\"stream_id\""];
   string claimer = 2;
 }
