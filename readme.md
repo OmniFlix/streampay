@@ -38,7 +38,7 @@ streampayd version
 rm -rf ~/.streampay/config/*
 
 #Init node	
-streampayd unsafe-reset-all
+streampayd tendermint unsafe-reset-all
 streampayd init "sp-node"  --chain-id "sp-test-1"
 
 # Add keys
@@ -47,15 +47,15 @@ streampayd keys add user1 --keyring-backend test
 streampayd keys add user2 --keyring-backend test
 
 # Add genesis accounts
-streampayd add-genesis-account $(streampayd keys show validator -a --keyring-backend test) 1000000000stake
-streampayd add-genesis-account $(streampayd keys show user1 -a --keyring-backend test) 1000000000000stake
+streampayd genesis add-genesis-account $(streampayd keys show validator -a --keyring-backend test) 1000000000stake
+streampayd genesis add-genesis-account $(streampayd keys show user1 -a --keyring-backend test) 1000000000000stake
 
 # Create gentx
-streampayd gentx validator 10000000stake --moniker "validator-1" --chain-id "sp-test-1" --keyring-backend test
+streampayd genesis gentx validator 10000000stake --moniker "validator-1" --chain-id "sp-test-1" --keyring-backend test
 
 # Collect Gentxs
-streampayd collect-gentxs
-streampayd validate-genesis
+streampayd genesis collect-gentxs
+streampayd genesis validate-genesis
 
 # Start Chain with default config
 streampayd start
@@ -105,11 +105,11 @@ To Start a stream payment
 
 cmd :
 
- `streampayd tx streampay stream-send [recipient] [amount] --end-time <unix-timestamp> --delayed --chain-id <chain-id> --from <key>`
+ `streampayd tx streampay stream-send [recipient] [amount] --duration <stream-duration> --delayed --chain-id <chain-id> --from <key>`
 
 To start a continuous payment stream
 ```bash=
-streampayd tx streampay stream-send streampay1vnlgxmzh8mr5e43ku38f9470p2q0jfscksa98g 10000stake --end-time 1638786850  --chain-id streampay  --from bob
+streampayd tx streampay stream-send streampay1vnlgxmzh8mr5e43ku38f9470p2q0jfscksa98g 10000stake --duration 86400s  --chain-id streampay  --from bob
 ```
 Use --delayed flag for delayed payments.
 
