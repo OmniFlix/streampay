@@ -47,7 +47,7 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 		return nil, err
 	}
 	feePercentage := m.Keeper.GetStreamPaymentFeePercentage(ctx)
-	feeAmount := sdk.NewCoin(msg.Amount.Denom, msg.Amount.Amount.ToLegacyDec().Mul(feePercentage).TruncateInt())
+	feeAmount := sdk.NewCoin(msg.Amount.Denom, sdk.NewDecFromInt(msg.Amount.Amount).Mul(feePercentage).TruncateInt())
 	amountToSend := msg.Amount.SubAmount(feeAmount.Amount)
 
 	if err := m.distributionKeeper.FundCommunityPool(ctx, sdk.NewCoins(feeAmount), sender); err != nil {
