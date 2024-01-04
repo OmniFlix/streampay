@@ -60,13 +60,13 @@ func GetCmdStreamSend() *cobra.Command {
 			"cancellation of stream payments:\n" +
 			"using --cancellable flag, you can create a cancellable stream payment\n",
 		Example: fmt.Sprintf(
-			"$ %s tx streampay stream-send [recipient] [amount] --end-time <end-timestamp>"+
+			"$ %s tx streampay stream-send [recipient] [amount] --duration <duration>"+
 				" --chain-id <chain-id> --from <sender> --fees <fees>\n\n"+
 				"delayed payment:\n"+
-				"$ %s tx streampay stream-send [recipient] [amount] --end-time <end-timestamp> --delayed"+
+				"$ %s tx streampay stream-send [recipient] [amount] --duration <stream-duration> --delayed"+
 				" --chain-id <chain-id> --from <sender> --fees <fees>\n\n"+
 				"periodic payment:\n"+
-				"$ %s tx streampay stream-send [recipient] [amount] --end-time <end-timestamp> --stream-periods-file <stream-periods-file>"+
+				"$ %s tx streampay stream-send [recipient] [amount]  --stream-periods-file <stream-periods-file>"+
 				" --chain-id <chain-id> --from <sender> --fees <fees>\n\n",
 			version.AppName, version.AppName, version.AppName,
 		),
