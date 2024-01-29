@@ -47,17 +47,19 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 		return nil, err
 	}
 	feePercentage := m.Keeper.GetStreamPaymentFeePercentage(ctx)
-	feeAmount := sdk.NewCoin(msg.Amount.Denom, sdk.NewDecFromInt(msg.Amount.Amount).Mul(feePercentage).TruncateInt())
-	amountToSend := msg.Amount.SubAmount(feeAmount.Amount)
+	requiredFeeAmount := sdk.NewCoin(msg.Amount.Denom, sdk.NewDecFromInt(msg.Amount.Amount).Mul(feePercentage).TruncateInt())
+	if !msg.PaymentFee.Equal(requiredFeeAmount) {
+		return nil, errorsmod.Wrap(types.ErrInvalidStreamPaymentFee, "fee coin didn't match with stream coin")
+	}
 
-	if err := m.distributionKeeper.FundCommunityPool(ctx, sdk.NewCoins(feeAmount), sender); err != nil {
+	if err := m.distributionKeeper.FundCommunityPool(ctx, sdk.NewCoins(requiredFeeAmount), sender); err != nil {
 		return nil, err
 	}
 
 	streamPaymentId, err := m.Keeper.CreateStreamPayment(
 		ctx,
 		sender, recipient,
-		amountToSend,
+		msg.Amount,
 		msg.StreamType,
 		msg.Duration,
 		msg.Periods,

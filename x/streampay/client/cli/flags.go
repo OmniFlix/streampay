@@ -9,6 +9,7 @@ const (
 	FlagDelayed           = "delayed"
 	FlagStreamPeriodsFile = "stream-periods-file"
 	FlagCancellable       = "cancellable"
+	FlagPaymentFee        = "payment-fee"
 )
 
 var FsStreamSend = flag.NewFlagSet("", flag.ContinueOnError)
@@ -18,4 +19,5 @@ func init() {
 	FsStreamSend.Bool(FlagDelayed, false, "to create a delayed stream payment")
 	FsStreamSend.String(FlagStreamPeriodsFile, "", "stream periods json file")
 	FsStreamSend.Bool(FlagCancellable, false, "to create cancellable stream payment")
+	FsStreamSend.String(FlagPaymentFee, "", "payment fee")
 }

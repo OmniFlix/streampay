@@ -28,6 +28,7 @@ func NewMsgStreamSend(
 	duration time.Duration,
 	periods []*Period,
 	cancellable bool,
+	paymentFee sdk.Coin,
 ) *MsgStreamSend {
 	return &MsgStreamSend{
 		Sender:      sender,
@@ -37,6 +38,7 @@ func NewMsgStreamSend(
 		Duration:    duration,
 		Periods:     periods,
 		Cancellable: cancellable,
+		PaymentFee:  paymentFee,
 	}
 }
 
@@ -54,6 +56,9 @@ func (msg MsgStreamSend) ValidateBasic() error {
 		return err
 	}
 	if err := validateAmount(msg.Amount); err != nil {
+		return err
+	}
+	if err := validateAmount(msg.PaymentFee); err != nil {
 		return err
 	}
 	if err := ValidateDuration(msg.Duration); err != nil {

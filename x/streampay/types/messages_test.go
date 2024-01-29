@@ -36,6 +36,7 @@ func TestMsgStreamSend(t *testing.T) {
 			time.Second*100,
 			periods,
 			false,
+			sdk.NewInt64Coin("uspay", 1_000_000),
 		)
 
 		return after(validMsg)

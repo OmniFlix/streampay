@@ -30,7 +30,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 	for _, acc := range suite.TestAccs {
 		suite.FundAcc(acc, fundAccsAmount)
 	}
-	suite.App.StreamPayKeeper.SetParams(suite.Ctx, types.DefaultParams())
+	_ = suite.App.StreamPayKeeper.SetParams(suite.Ctx, types.DefaultParams())
 
 	suite.queryClient = types.NewQueryClient(suite.QueryHelper)
 	suite.msgServer = keeper.NewMsgServerImpl(suite.App.StreamPayKeeper)
@@ -46,6 +46,7 @@ func (suite *KeeperTestSuite) CreateDefaultStreamPayment(cancellable bool) {
 		Duration:    100,
 		Periods:     nil,
 		Cancellable: cancellable,
+		PaymentFee:  sdk.NewInt64Coin("uspay", 1_000_000),
 	})
 	suite.defaultStreamPaymentId = res.StreamId
 }
@@ -60,6 +61,7 @@ func (suite *KeeperTestSuite) CreateStreamPayment(streamType types.StreamType, c
 		Duration:    100,
 		Periods:     nil,
 		Cancellable: cancellable,
+		PaymentFee:  sdk.NewInt64Coin("uspay", 1_000_000),
 	})
 	return res.StreamId
 }
