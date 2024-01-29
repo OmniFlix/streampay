@@ -60,13 +60,13 @@ func GetCmdStreamSend() *cobra.Command {
 			"cancellation of stream payments:\n" +
 			"using --cancellable flag, you can create a cancellable stream payment\n",
 		Example: fmt.Sprintf(
-			"$ %s tx streampay stream-send [recipient] [amount] --duration <duration>"+
+			"$ %s tx streampay stream-send [recipient] [amount] --payment-fee [amount] --duration <duration>"+
 				" --chain-id <chain-id> --from <sender> --fees <fees>\n\n"+
 				"delayed payment:\n"+
-				"$ %s tx streampay stream-send [recipient] [amount] --duration <stream-duration> --delayed"+
+				"$ %s tx streampay stream-send [recipient] [amount] --payment-fee [amount]--duration <stream-duration> --delayed"+
 				" --chain-id <chain-id> --from <sender> --fees <fees>\n\n"+
 				"periodic payment:\n"+
-				"$ %s tx streampay stream-send [recipient] [amount]  --stream-periods-file <stream-periods-file>"+
+				"$ %s tx streampay stream-send [recipient] [amount]  --payment-fee [amount] --stream-periods-file <stream-periods-file>"+
 				" --chain-id <chain-id> --from <sender> --fees <fees>\n\n",
 			version.AppName, version.AppName, version.AppName,
 		),
@@ -123,6 +123,14 @@ func GetCmdStreamSend() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			paymentFeeStr, err := cmd.Flags().GetString(FlagPaymentFee)
+			if err != nil {
+				return err
+			}
+			paymentFee, err := sdk.ParseCoinNormalized(paymentFeeStr)
+			if err != nil {
+				return err
+			}
 
 			msg := types.NewMsgStreamSend(
 				sender.String(),
@@ -132,6 +140,7 @@ func GetCmdStreamSend() *cobra.Command {
 				duration,
 				periods,
 				cancellable,
+				paymentFee,
 			)
 
 			if err := msg.ValidateBasic(); err != nil {
@@ -144,6 +153,7 @@ func GetCmdStreamSend() *cobra.Command {
 
 	cmd.Flags().AddFlagSet(FsStreamSend)
 	_ = cmd.MarkFlagRequired(FlagDuration)
+	_ = cmd.MarkFlagRequired(FlagPaymentFee)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
