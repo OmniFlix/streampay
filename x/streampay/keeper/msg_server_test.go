@@ -17,6 +17,7 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 		duration              time.Duration
 		periods               []*types.Period
 		cancellable           bool
+		paymentFee            sdk.Coin
 		valid                 bool
 		expectedMessageEvents int
 	}{
@@ -28,8 +29,57 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			duration:              time.Second * 100,
 			periods:               nil,
 			cancellable:           false,
+			paymentFee:            sdk.NewInt64Coin("uspay", 1_000_000),
 			valid:                 true,
 			expectedMessageEvents: 1,
+		},
+		{
+			sender:                suite.TestAccs[0].String(),
+			recipient:             suite.TestAccs[1].String(),
+			amount:                sdk.NewInt64Coin("uspay", 100_000_000),
+			streamType:            types.TypeContinuous,
+			duration:              time.Second * 100,
+			periods:               nil,
+			cancellable:           false,
+			paymentFee:            sdk.NewInt64Coin("uspay", 10_000),
+			valid:                 false,
+			expectedMessageEvents: 0,
+		},
+		{
+			sender:                suite.TestAccs[0].String(),
+			recipient:             suite.TestAccs[1].String(),
+			amount:                sdk.NewInt64Coin("uspay", 100_000_000),
+			streamType:            types.TypeContinuous,
+			duration:              time.Second * 100,
+			periods:               nil,
+			cancellable:           false,
+			paymentFee:            sdk.NewInt64Coin("uspy", 1_000_000),
+			valid:                 false,
+			expectedMessageEvents: 0,
+		},
+		{
+			sender:                suite.TestAccs[0].String(),
+			recipient:             suite.TestAccs[1].String(),
+			amount:                sdk.NewInt64Coin("uspay", 1_000_000),
+			streamType:            types.TypeContinuous,
+			duration:              time.Second * 100,
+			periods:               nil,
+			cancellable:           false,
+			paymentFee:            sdk.Coin{"", sdk.NewInt(-1)},
+			valid:                 false,
+			expectedMessageEvents: 0,
+		},
+		{
+			sender:                suite.TestAccs[0].String(),
+			recipient:             suite.TestAccs[1].String(),
+			amount:                sdk.Coin{"", sdk.NewInt(-1)},
+			streamType:            types.TypeContinuous,
+			duration:              time.Second * 100,
+			periods:               nil,
+			cancellable:           false,
+			paymentFee:            sdk.NewInt64Coin("uspay", 1_000_000),
+			valid:                 false,
+			expectedMessageEvents: 0,
 		},
 		{
 			sender:                suite.TestAccs[0].String(),
@@ -39,6 +89,60 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			duration:              time.Second * 100,
 			periods:               nil,
 			cancellable:           false,
+			paymentFee:            sdk.NewInt64Coin("uspay", 1_000_000),
+			valid:                 true,
+			expectedMessageEvents: 1,
+		},
+		{
+			sender:     suite.TestAccs[0].String(),
+			recipient:  suite.TestAccs[1].String(),
+			amount:     sdk.NewInt64Coin("uspay", 10_000_000),
+			streamType: types.TypePeriodic,
+			duration:   time.Second * 100,
+			periods: []*types.Period{
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+				{
+					Amount:   1_000_000,
+					Duration: 10,
+				},
+			},
+			cancellable:           true,
+			paymentFee:            sdk.NewInt64Coin("uspay", 100_000),
 			valid:                 true,
 			expectedMessageEvents: 1,
 		},
@@ -91,26 +195,32 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 				},
 			},
 			cancellable:           true,
-			valid:                 true,
-			expectedMessageEvents: 1,
+			paymentFee:            sdk.NewInt64Coin("uspay", 1_000_000),
+			valid:                 false,
+			expectedMessageEvents: 0,
 		},
 	} {
 		suite.Run("create stream payment", func() {
 			ctx := suite.Ctx.WithEventManager(sdk.NewEventManager())
 			suite.Require().Equal(0, len(ctx.EventManager().Events()))
 			// Test stream send message
-			_, err := suite.msgServer.StreamSend(
-				sdk.WrapSDKContext(ctx),
-				types.NewMsgStreamSend(
-					tc.sender,
-					tc.recipient,
-					tc.amount,
-					tc.streamType,
-					tc.duration,
-					tc.periods,
-					tc.cancellable,
-				),
+			msg := types.NewMsgStreamSend(
+				tc.sender,
+				tc.recipient,
+				tc.amount,
+				tc.streamType,
+				tc.duration,
+				tc.periods,
+				tc.cancellable,
+				tc.paymentFee,
 			)
+			err := msg.ValidateBasic()
+			if err == nil {
+				_, err = suite.msgServer.StreamSend(
+					sdk.WrapSDKContext(ctx),
+					msg,
+				)
+			}
 			if tc.valid {
 				suite.Require().NoError(err)
 			}
