@@ -16,7 +16,7 @@ func validateStreamPayment(streamPayment StreamPayment) error {
 	if _, err := sdk.AccAddressFromBech32(streamPayment.Recipient); err != nil {
 		return err
 	}
-	if err := validateAmount(streamPayment.TotalAmount); err != nil {
+	if err := validateStreamAmount(streamPayment.TotalAmount); err != nil {
 		return err
 	}
 	if err := ValidateTimestamp(streamPayment.StartTime); err != nil {
@@ -28,11 +28,21 @@ func validateStreamPayment(streamPayment StreamPayment) error {
 	return validateStreamType(streamPayment.StreamType)
 }
 
-func validateAmount(amount sdk.Coin) error {
+func validateStreamAmount(amount sdk.Coin) error {
 	if !amount.IsValid() || amount.IsNil() || amount.Amount.LTE(sdk.ZeroInt()) {
 		return errorsmod.Wrapf(
 			ErrInvalidAmount,
 			fmt.Sprintf("amount %s is not valid", amount.String()),
+		)
+	}
+	return nil
+}
+
+func validateFeeAmount(amount sdk.Coin) error {
+	if !amount.IsValid() || amount.IsNil() || amount.Amount.LT(sdk.ZeroInt()) {
+		return errorsmod.Wrapf(
+			ErrInvalidAmount,
+			fmt.Sprintf("fee amount %s is not valid", amount.String()),
 		)
 	}
 	return nil
