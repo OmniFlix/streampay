@@ -51,11 +51,11 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 	if !msg.PaymentFee.Equal(requiredFeeAmount) {
 		return nil, errorsmod.Wrap(types.ErrInvalidStreamPaymentFee, "fee coin didn't match with stream coin")
 	}
-
-	if err := m.distributionKeeper.FundCommunityPool(ctx, sdk.NewCoins(requiredFeeAmount), sender); err != nil {
-		return nil, err
+	if requiredFeeAmount.Amount.GTE(sdk.NewInt(1)) {
+		if err := m.distributionKeeper.FundCommunityPool(ctx, sdk.NewCoins(requiredFeeAmount), sender); err != nil {
+			return nil, err
+		}
 	}
-
 	streamPaymentId, err := m.Keeper.CreateStreamPayment(
 		ctx,
 		sender, recipient,

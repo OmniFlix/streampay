@@ -55,10 +55,10 @@ func (msg MsgStreamSend) ValidateBasic() error {
 	if err != nil {
 		return err
 	}
-	if err := validateAmount(msg.Amount); err != nil {
+	if err := validateStreamAmount(msg.Amount); err != nil {
 		return err
 	}
-	if err := validateAmount(msg.PaymentFee); err != nil {
+	if err := validateFeeAmount(msg.PaymentFee); err != nil {
 		return err
 	}
 	if err := ValidateDuration(msg.Duration); err != nil {
