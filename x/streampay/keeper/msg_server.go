@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
@@ -46,6 +47,10 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 	if err != nil {
 		return nil, err
 	}
+	if m.bankKeeper.BlockedAddr(recipient) {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive funds", msg.Recipient)
+	}
+
 	feePercentage := m.Keeper.GetStreamPaymentFeePercentage(ctx)
 	requiredFeeAmount := sdk.NewCoin(msg.Amount.Denom, sdk.NewDecFromInt(msg.Amount.Amount).Mul(feePercentage).TruncateInt())
 	if !msg.PaymentFee.Equal(requiredFeeAmount) {
