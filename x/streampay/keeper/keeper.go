@@ -1,13 +1,14 @@
 package keeper
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"fmt"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -99,7 +100,7 @@ func (k Keeper) CreateStreamPayment(ctx sdk.Context,
 
 	// update stream payment
 	streamPayment.Id = types.StreamPaymentPrefix + fmt.Sprint(pNum)
-	streamPayment.StreamedAmount = sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(0))
+	streamPayment.StreamedAmount = sdk.NewCoin(streamPayment.TotalAmount.Denom, sdkmath.NewInt(0))
 
 	k.SetStreamPayment(ctx, streamPayment)
 	k.SetNextStreamPaymentNumber(ctx, pNum+1)
@@ -151,7 +152,7 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 		streamedAmount = k.getStreamedAmountForPeriodicStreamPayment(ctx, streamPayment)
 	}
 	lastStreamedAmount := streamPayment.StreamedAmount
-	streamPayment.StreamedAmount.Amount = sdk.NewInt(int64(streamedAmount))
+	streamPayment.StreamedAmount.Amount = sdkmath.NewInt(int64(streamedAmount))
 	remainingAmount := streamPayment.TotalAmount.Sub(streamPayment.StreamedAmount)
 	// transfer remaining amount to sender
 	if err := k.TransferAmountFromModuleAccount(ctx, sender, sdk.NewCoins(remainingAmount)); err != nil {
@@ -253,7 +254,7 @@ func (k Keeper) claimDelayedStreamPayment(ctx sdk.Context, streamPayment types.S
 func (k Keeper) claimContinuousStreamPayment(ctx sdk.Context, streamPayment types.StreamPayment, claimer sdk.AccAddress) error {
 	streamedAmount := k.getStreamedAmount(ctx, streamPayment)
 	amountToSend := int64(streamedAmount) - streamPayment.StreamedAmount.Amount.Int64()
-	amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(amountToSend))
+	amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdkmath.NewInt(amountToSend))
 
 	if amount.IsZero() || amount.IsNil() {
 		return errorsmod.Wrapf(
@@ -282,7 +283,7 @@ func (k Keeper) claimContinuousStreamPayment(ctx sdk.Context, streamPayment type
 func (k Keeper) claimPeriodicStreamPayment(ctx sdk.Context, streamPayment types.StreamPayment, claimer sdk.AccAddress) error {
 	streamedAmount := k.getStreamedAmountForPeriodicStreamPayment(ctx, streamPayment)
 	amountToSend := int64(streamedAmount) - streamPayment.StreamedAmount.Amount.Int64()
-	amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdk.NewInt(amountToSend))
+	amount := sdk.NewCoin(streamPayment.TotalAmount.Denom, sdkmath.NewInt(amountToSend))
 
 	if amount.IsZero() || amount.IsNil() {
 		return errorsmod.Wrapf(

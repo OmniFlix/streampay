@@ -1,19 +1,18 @@
 package app
 
 import (
-	"encoding/json"
+	sdkmath "cosmossdk.io/math"
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	apphelpers "github.com/OmniFlix/streampay/v2/app/helpers"
 	appparams "github.com/OmniFlix/streampay/v2/app/params"
-	dbm "github.com/cometbft/cometbft-db"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	dbm "github.com/cosmos/cosmos-db"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -75,7 +74,7 @@ func Setup(t *testing.T, _ bool, _ uint) *StreamPayApp {
 	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
 	balance := banktypes.Balance{
 		Address: acc.GetAddress().String(),
-		Coins:   sdk.NewCoins(sdk.NewCoin(appparams.BondDenom, sdk.NewInt(100000000000000))),
+		Coins:   sdk.NewCoins(sdk.NewCoin(appparams.BondDenom, sdkmath.NewInt(100000000000000))),
 	}
 
 	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
@@ -98,26 +97,27 @@ func SetupWithGenesisValSet(
 	streamPayApp, genesisState := setup(true, 5)
 	genesisState = genesisStateWithValSet(t, streamPayApp, genesisState, valSet, genAccs, balances...)
 
-	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
-	require.NoError(t, err)
+	// stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+	// require.NoError(t, err)
+	// TODO: update to sdk v0.50.x
+	/*
+		// init chain will set the validator set and initialize the genesis accounts
+		streamPayApp.InitChain(
+			abci.RequestInitChain{
+				Validators:      []abci.ValidatorUpdate{},
+				ConsensusParams: DefaultConsensusParams,
+				AppStateBytes:   stateBytes,
+			},
+		)
 
-	// init chain will set the validator set and initialize the genesis accounts
-	streamPayApp.InitChain(
-		abci.RequestInitChain{
-			Validators:      []abci.ValidatorUpdate{},
-			ConsensusParams: DefaultConsensusParams,
-			AppStateBytes:   stateBytes,
-		},
-	)
-
-	// commit genesis changes
-	streamPayApp.Commit()
-	streamPayApp.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-		Height:             streamPayApp.LastBlockHeight() + 1,
-		AppHash:            streamPayApp.LastCommitID().Hash,
-		ValidatorsHash:     valSet.Hash(),
-		NextValidatorsHash: valSet.Hash(),
-	}})
+		// commit genesis changes
+		streamPayApp.Commit()
+		streamPayApp.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+			Height:             streamPayApp.LastBlockHeight() + 1,
+			AppHash:            streamPayApp.LastCommitID().Hash,
+			ValidatorsHash:     valSet.Hash(),
+			NextValidatorsHash: valSet.Hash(),
+		}})*/
 
 	return streamPayApp
 }
@@ -173,15 +173,15 @@ func genesisStateWithValSet(
 			Jailed:            false,
 			Status:            stakingtypes.Bonded,
 			Tokens:            bondAmt,
-			DelegatorShares:   sdk.OneDec(),
+			DelegatorShares:   sdkmath.LegacyOneDec(),
 			Description:       stakingtypes.Description{},
 			UnbondingHeight:   int64(0),
 			UnbondingTime:     time.Unix(0, 0).UTC(),
-			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
-			MinSelfDelegation: sdk.ZeroInt(),
+			Commission:        stakingtypes.NewCommission(sdkmath.LegacyZeroDec(), sdkmath.LegacyZeroDec(), sdkmath.LegacyZeroDec()),
+			MinSelfDelegation: sdkmath.ZeroInt(),
 		}
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress().String(), val.Address.String(), sdkmath.LegacyOneDec()))
 
 	}
 	// set validators and delegations

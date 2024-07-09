@@ -1,9 +1,9 @@
 package types
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,9 +14,9 @@ func TestParams_ValidateBasic(t *testing.T) {
 		expError bool
 	}{
 		{"default params", DefaultParams(), false},
-		{"valid params", Params{StreamPaymentFeePercentage: sdk.NewDec(0)}, false},
-		{"invalid stream fee percentage", Params{StreamPaymentFeePercentage: sdk.NewDec(1)}, true},
-		{"invalid stream fee percentage", Params{StreamPaymentFeePercentage: sdk.NewDec(-1)}, true},
+		{"valid params", Params{StreamPaymentFeePercentage: sdkmath.LegacyNewDec(0)}, false},
+		{"invalid stream fee percentage", Params{StreamPaymentFeePercentage: sdkmath.LegacyNewDec(1)}, true},
+		{"invalid stream fee percentage", Params{StreamPaymentFeePercentage: sdkmath.LegacyNewDec(-1)}, true},
 	}
 	for _, tc := range testCases {
 		err := tc.params.ValidateBasic()

@@ -6,14 +6,13 @@ import (
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/client/config"
-	"github.com/cosmos/cosmos-sdk/client/pruning"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"cosmossdk.io/log"
 	"github.com/OmniFlix/streampay/v2/app/params"
-	dbm "github.com/cometbft/cometbft-db"
 	tmcfg "github.com/cometbft/cometbft/config"
 	tmcli "github.com/cometbft/cometbft/libs/cli"
-	"github.com/cometbft/cometbft/libs/log"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
@@ -27,7 +26,6 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	vestingcli "github.com/cosmos/cosmos-sdk/x/auth/vesting/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 )
@@ -98,14 +96,14 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	cfg := sdk.GetConfig()
 	cfg.Seal()
 
-	ac := appCreator{encodingConfig}
+	//ac := appCreator{encodingConfig}
 
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		addDebugCommands(debug.Cmd()),
-		config.Cmd(),
-		pruning.PruningCmd(ac.newApp),
+		//config.Cmd(),
+		//pruning.PruningCmd(ac.newApp),
 	)
 
 	a := appCreator{encodingConfig}
@@ -113,11 +111,11 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 
 	// add keybase, auxiliary RPC, query, genesis and tx child commands
 	rootCmd.AddCommand(
-		rpc.StatusCommand(),
+		server.StatusCommand(),
 		genesisCommand(encodingConfig),
 		queryCommand(),
 		txCommand(),
-		keys.Commands(app.DefaultNodeHome),
+		keys.Commands(),
 	)
 }
 
@@ -145,9 +143,8 @@ func queryCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		authcmd.GetAccountCmd(),
 		rpc.ValidatorCommand(),
-		rpc.BlockCommand(),
+		server.QueryBlockCmd(),
 		authcmd.QueryTxsByEventsCmd(),
 		authcmd.QueryTxCmd(),
 	)
@@ -177,7 +174,6 @@ func txCommand() *cobra.Command {
 		authcmd.GetEncodeCommand(),
 		authcmd.GetDecodeCommand(),
 		flags.LineBreak,
-		vestingcli.GetTxCmd(),
 	)
 
 	app.ModuleBasics.AddTxCommands(cmd)

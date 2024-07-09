@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	storetypes "cosmossdk.io/store/types"
 	"encoding/binary"
 	"math"
 
@@ -61,7 +62,7 @@ func (k Keeper) RemoveStreamPayment(ctx sdk.Context, id string) {
 func (k Keeper) IterateStreamPayments(ctx sdk.Context, fn func(index int64, streamPayment types.StreamPayment) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.PrefixPaymentStreamId)
+	iterator := storetypes.KVStorePrefixIterator(store, types.PrefixPaymentStreamId)
 	defer iterator.Close()
 
 	i := int64(0)

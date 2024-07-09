@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"testing"
 
 	"github.com/OmniFlix/streampay/v2/app/apptesting"
@@ -25,7 +26,7 @@ func TestKeeperTestSuite(t *testing.T) {
 func (suite *KeeperTestSuite) SetupTest() {
 	suite.Setup()
 	fundAccsAmount := sdk.NewCoins(
-		sdk.NewCoin("uspay", sdk.NewInt(10_000_000_000)),
+		sdk.NewCoin("uspay", sdkmath.NewInt(10_000_000_000)),
 	)
 	for _, acc := range suite.TestAccs {
 		suite.FundAcc(acc, fundAccsAmount)
@@ -75,14 +76,14 @@ func (suite *KeeperTestSuite) TestParams() {
 		{
 			name: "set invalid fee",
 			input: types.Params{
-				StreamPaymentFeePercentage: sdk.NewDec(1),
+				StreamPaymentFeePercentage: sdkmath.LegacyNewDec(1),
 			},
 			expectErr: true,
 		},
 		{
 			name: "set invalid fee",
 			input: types.Params{
-				StreamPaymentFeePercentage: sdk.NewDec(-1),
+				StreamPaymentFeePercentage: sdkmath.LegacyNewDec(-1),
 			},
 			expectErr: true,
 		},

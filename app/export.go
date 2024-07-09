@@ -1,6 +1,7 @@
 package app
 
 import (
+	storetypes "cosmossdk.io/store/types"
 	"encoding/json"
 	"log"
 
@@ -21,7 +22,7 @@ func (app *StreamPayApp) ExportAppStateAndValidators(
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	// as if they could withdraw from the start of the next block
-	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContextLegacy(true, tmproto.Header{Height: app.LastBlockHeight()})
 
 	// We export at last height + 1, because that's the height at which
 	// Tendermint will start InitChain.
@@ -31,7 +32,10 @@ func (app *StreamPayApp) ExportAppStateAndValidators(
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	genState := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
+	genState, err := app.mm.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
 	appState, err := json.MarshalIndent(genState, "", "  ")
 	if err != nil {
 		return servertypes.ExportedApp{}, err
@@ -77,18 +81,27 @@ func (app *StreamPayApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAd
 	/* Handle fee distribution state. */
 
 	// withdraw all validator commission
-	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		_, err := app.DistrKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
+	err := app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+		addr, _ := sdk.ValAddressFromBech32(val.GetOperator())
+		_, err := app.DistrKeeper.WithdrawValidatorCommission(ctx, addr)
 		if err != nil {
 			panic(err)
 		}
 		return false
 	})
+	if err != nil {
+		return
+	}
 
 	// withdraw all delegator rewards
-	dels := app.StakingKeeper.GetAllDelegations(ctx)
+	dels, err := app.StakingKeeper.GetAllDelegations(ctx)
+	if err != nil {
+		panic(err)
+	}
 	for _, delegation := range dels {
-		_, err := app.DistrKeeper.WithdrawDelegationRewards(ctx, delegation.GetDelegatorAddr(), delegation.GetValidatorAddr())
+		delegatorAddr, _ := sdk.AccAddressFromBech32(delegation.GetDelegatorAddr())
+		valAddr, _ := sdk.ValAddressFromBech32(delegation.GetValidatorAddr())
+		_, err := app.DistrKeeper.WithdrawDelegationRewards(ctx, delegatorAddr, valAddr)
 		if err != nil {
 			panic(err)
 		}
@@ -103,24 +116,30 @@ func (app *StreamPayApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAd
 	// set context height to zero
 	height := ctx.BlockHeight()
 	ctx = ctx.WithBlockHeight(0)
+	/*
+		// reinitialize all validators
+		app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+			// donate any unwithdrawn outstanding reward fraction tokens to the community pool
+			valOperator, _ := sdk.ValAddressFromBech32(val.GetOperator())
+			scraps, err := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, valOperator)
+			if err != nil {
+				panic(err)
+			}
+			distributionAccount := app.DistrKeeper.GetDistributionAccount(ctx)
+			feePool := app.BankKeeper.GetBalance(ctx, distributionAccount.GetAddress(), "uspay")
+			feePool = feePool.Add(scraps)
+			app.DistrKeeper.SetFeePool(ctx, feePool)
 
-	// reinitialize all validators
-	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		// donate any unwithdrawn outstanding reward fraction tokens to the community pool
-		scraps := app.DistrKeeper.GetValidatorOutstandingRewardsCoins(ctx, val.GetOperator())
-		feePool := app.DistrKeeper.GetFeePool(ctx)
-		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
-		app.DistrKeeper.SetFeePool(ctx, feePool)
+			app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
+			return false
+		})
 
-		app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
-		return false
-	})
-
-	// reinitialize all delegations
-	for _, del := range dels {
-		app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
-		app.DistrKeeper.Hooks().AfterDelegationModified(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
-	}
+		// reinitialize all delegations
+		for _, del := range dels {
+			app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
+			app.DistrKeeper.Hooks().AfterDelegationModified(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
+		}
+	*/
 
 	// reset context height
 	ctx = ctx.WithBlockHeight(height)
@@ -148,13 +167,13 @@ func (app *StreamPayApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAd
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
 	store := ctx.KVStore(app.keys[stakingtypes.StoreKey])
-	iter := sdk.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
+	iter := storetypes.KVStoreReversePrefixIterator(store, stakingtypes.ValidatorsKey)
 	counter := int16(0)
 
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.ValAddress(iter.Key()[1:])
-		validator, found := app.StakingKeeper.GetValidator(ctx, addr)
-		if !found {
+		validator, err := app.StakingKeeper.GetValidator(ctx, addr)
+		if err != nil {
 			panic("expected validator, not found")
 		}
 

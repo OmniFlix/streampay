@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"time"
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
@@ -65,14 +66,14 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			duration:              time.Second * 100,
 			periods:               nil,
 			cancellable:           false,
-			paymentFee:            sdk.Coin{Denom: "", Amount: sdk.NewInt(-1)},
+			paymentFee:            sdk.Coin{Denom: "", Amount: sdkmath.NewInt(-1)},
 			valid:                 false,
 			expectedMessageEvents: 0,
 		},
 		{
 			sender:                suite.TestAccs[0].String(),
 			recipient:             suite.TestAccs[1].String(),
-			amount:                sdk.Coin{Denom: "", Amount: sdk.NewInt(-1)},
+			amount:                sdk.Coin{Denom: "", Amount: sdkmath.NewInt(-1)},
 			streamType:            types.TypeContinuous,
 			duration:              time.Second * 100,
 			periods:               nil,
@@ -339,7 +340,7 @@ func (suite *KeeperTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: suite.App.StreamPayKeeper.GetAuthority(),
 				Params: types.Params{
-					StreamPaymentFeePercentage: sdk.NewDec(1),
+					StreamPaymentFeePercentage: sdkmath.LegacyNewDec(1),
 				},
 			},
 			expectErr: true,
@@ -349,7 +350,7 @@ func (suite *KeeperTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: suite.App.StreamPayKeeper.GetAuthority(),
 				Params: types.Params{
-					StreamPaymentFeePercentage: sdk.NewDecWithPrec(-5, 2),
+					StreamPaymentFeePercentage: sdkmath.LegacyNewDecWithPrec(-5, 2),
 				},
 			},
 			expectErr: true,
