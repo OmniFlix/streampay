@@ -3,11 +3,10 @@ package keeper
 import (
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 // GetPaymentStreamModuleAccount returns PaymentStream ModuleAccount
-func (k Keeper) GetPaymentStreamModuleAccount(ctx sdk.Context) authtypes.ModuleAccountI {
+func (k Keeper) GetPaymentStreamModuleAccount(ctx sdk.Context) sdk.ModuleAccountI {
 	return k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 }
 

@@ -1,8 +1,9 @@
 package types_test
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"testing"
+
+	sdkmath "cosmossdk.io/math"
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	"github.com/cometbft/cometbft/crypto/ed25519"

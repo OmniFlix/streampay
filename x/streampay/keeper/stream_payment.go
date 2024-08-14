@@ -1,9 +1,10 @@
 package keeper
 
 import (
-	storetypes "cosmossdk.io/store/types"
 	"encoding/binary"
 	"math"
+
+	storetypes "cosmossdk.io/store/types"
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

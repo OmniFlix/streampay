@@ -2,9 +2,10 @@ package streampay
 
 import (
 	"context"
-	"cosmossdk.io/core/appmodule"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/core/appmodule"
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/client/cli"
 	"github.com/OmniFlix/streampay/v2/x/streampay/keeper"

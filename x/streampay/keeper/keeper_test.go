@@ -1,8 +1,9 @@
 package keeper_test
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"testing"
+
+	sdkmath "cosmossdk.io/math"
 
 	"github.com/OmniFlix/streampay/v2/app/apptesting"
 	"github.com/OmniFlix/streampay/v2/x/streampay/keeper"
@@ -38,7 +39,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 }
 
 func (suite *KeeperTestSuite) CreateDefaultStreamPayment(cancellable bool) {
-	ctx := sdk.WrapSDKContext(suite.Ctx)
+	ctx := suite.Ctx
 	res, _ := suite.msgServer.StreamSend(ctx, &types.MsgStreamSend{
 		Sender:      suite.TestAccs[0].String(),
 		Recipient:   suite.TestAccs[1].String(),
@@ -53,7 +54,7 @@ func (suite *KeeperTestSuite) CreateDefaultStreamPayment(cancellable bool) {
 }
 
 func (suite *KeeperTestSuite) CreateStreamPayment(streamType types.StreamType, cancellable bool) string {
-	ctx := sdk.WrapSDKContext(suite.Ctx)
+	ctx := suite.Ctx
 	res, _ := suite.msgServer.StreamSend(ctx, &types.MsgStreamSend{
 		Sender:      suite.TestAccs[0].String(),
 		Recipient:   suite.TestAccs[1].String(),

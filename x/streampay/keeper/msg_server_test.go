@@ -1,8 +1,9 @@
 package keeper_test
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"time"
+
+	sdkmath "cosmossdk.io/math"
 
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -218,7 +219,7 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			err := msg.ValidateBasic()
 			if err == nil {
 				_, err = suite.msgServer.StreamSend(
-					sdk.WrapSDKContext(ctx),
+					ctx,
 					msg,
 				)
 			}
@@ -265,7 +266,7 @@ func (suite *KeeperTestSuite) TestStopStreamMsg() {
 			suite.Require().Equal(0, len(ctx.EventManager().Events()))
 			// Test stream send message
 			_, err := suite.msgServer.StopStream(
-				sdk.WrapSDKContext(ctx),
+				ctx,
 				types.NewMsgStopStream(
 					tc.streamId,
 					tc.sender,
@@ -307,7 +308,7 @@ func (suite *KeeperTestSuite) TestClaimStreamedAmountMsg() {
 			suite.Require().Equal(0, len(ctx.EventManager().Events()))
 			// Test stream send message
 			_, err := suite.msgServer.ClaimStreamedAmount(
-				sdk.WrapSDKContext(ctx),
+				ctx,
 				types.NewMsgClaimStreamedAmount(
 					tc.streamId,
 					tc.recipient,

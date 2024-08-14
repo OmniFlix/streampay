@@ -13,6 +13,10 @@ import (
 
 	"github.com/OmniFlix/streampay/v2/docs"
 
+	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
+	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
+	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
+
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/evidence"
@@ -31,7 +35,6 @@ import (
 	tmos "github.com/cometbft/cometbft/libs/os"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/client"
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
@@ -49,7 +52,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
-	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	txconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -94,6 +96,8 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
+	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	ibcporttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
@@ -186,6 +190,8 @@ type StreamPayApp struct {
 	interfaceRegistry types.InterfaceRegistry
 
 	invCheckPeriod uint
+
+	ModuleBasics module.BasicManager
 
 	// keys to access the substores
 	keys    map[string]*storetypes.KVStoreKey
@@ -398,8 +404,8 @@ func NewStreamPayApp(
 	govRouter := govv1beta1.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper))
-	//AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-	//AddRoute(ibcexported.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+	// AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
+	// AddRoute(ibcexported.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -473,12 +479,12 @@ func NewStreamPayApp(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
-	enabledSignModes := append(tx.DefaultSignModes, signingtypes.SignMode_SIGN_MODE_TEXTUAL)
-	txConfigOpts := tx.ConfigOptions{
+	enabledSignModes := append(authtx.DefaultSignModes, signingtypes.SignMode_SIGN_MODE_TEXTUAL)
+	txConfigOpts := authtx.ConfigOptions{
 		EnabledSignModes:           enabledSignModes,
 		TextualCoinMetadataQueryFn: txconfig.NewBankKeeperCoinMetadataQueryFn(app.BankKeeper),
 	}
-	txConfig, err := tx.NewTxConfigWithOptions(
+	txConfig, err := authtx.NewTxConfigWithOptions(
 		appCodec,
 		txConfigOpts,
 	)
@@ -512,12 +518,14 @@ func NewStreamPayApp(
 		streampayModule,
 	)
 
+	// part of sdk v0.50.x migration
+	app.mm.SetOrderPreBlockers(upgradetypes.ModuleName)
+
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
 	app.mm.SetOrderBeginBlockers(
-		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
 		distrtypes.ModuleName,
@@ -589,7 +597,21 @@ func NewStreamPayApp(
 
 	app.mm.RegisterInvariants(app.CrisisKeeper)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
-	app.mm.RegisterServices(app.configurator)
+	err = app.mm.RegisterServices(app.configurator)
+	if err != nil {
+		panic(err)
+	}
+
+	// Migration check
+	app.ModuleBasics = module.NewBasicManagerFromManager(
+		app.mm,
+		map[string]module.AppModuleBasic{
+			"gov": gov.NewAppModuleBasic(
+				[]govclient.ProposalHandler{
+					paramsclient.ProposalHandler,
+				}),
+		},
+	)
 
 	app.sm = module.NewSimulationManager(
 		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
@@ -607,6 +629,15 @@ func NewStreamPayApp(
 		transferModule,
 	)
 
+	// SDK v47 - since we do not use dep inject, this gives us access to newer gRPC services.
+	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.mm.Modules))
+
+	reflectionSvc, err := runtimeservices.NewReflectionService()
+	if err != nil {
+		panic(err)
+	}
+	reflectionv1.RegisterReflectionServiceServer(app.GRPCQueryRouter(), reflectionSvc)
+
 	// initialize stores
 	app.MountKVStores(keys)
 	app.MountTransientStores(tkeys)
@@ -614,6 +645,7 @@ func NewStreamPayApp(
 
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
+	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 
 	anteHandler, err := NewAnteHandler(
@@ -637,6 +669,8 @@ func NewStreamPayApp(
 
 	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
+	app.SetPrecommiter(app.PreCommitter)
+	app.SetPrepareCheckStater(app.PrepareCheckStater)
 
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
@@ -674,6 +708,26 @@ func (app *StreamPayApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain
 		panic(err)
 	}
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
+}
+
+// PreBlocker application updates before begin of the block
+func (app *StreamPayApp) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	return app.mm.PreBlock(ctx)
+}
+
+// PreCommitter application updates before the commit of a block after all transactions have been delivered.
+func (app *StreamPayApp) PreCommitter(ctx sdk.Context) {
+	mm := app.ModuleManager()
+	if err := mm.Precommit(ctx); err != nil {
+		panic(err)
+	}
+}
+
+func (app *StreamPayApp) PrepareCheckStater(ctx sdk.Context) {
+	mm := app.ModuleManager()
+	if err := mm.PrepareCheckState(ctx); err != nil {
+		panic(err)
+	}
 }
 
 // LoadHeight loads a particular height
@@ -741,6 +795,10 @@ func (app *StreamPayApp) GetSubspace(moduleName string) paramstypes.Subspace {
 	return subspace
 }
 
+func (app *StreamPayApp) ModuleManager() module.Manager {
+	return *app.mm
+}
+
 // SimulationManager implements the SimulationApp interface
 func (app *StreamPayApp) SimulationManager() *module.SimulationManager {
 	return app.sm
@@ -765,12 +823,12 @@ func (app *StreamPayApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
-func (app *StreamPayApp) RegisterTxService(clientCtx client.Context) {
+func (app *StreamPayApp) RegisterTxService(clientCtx sdkclient.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
-func (app *StreamPayApp) RegisterTendermintService(clientCtx client.Context) {
+func (app *StreamPayApp) RegisterTendermintService(clientCtx sdkclient.Context) {
 	cmtservice.RegisterTendermintService(
 		clientCtx,
 		app.BaseApp.GRPCQueryRouter(),
@@ -780,7 +838,7 @@ func (app *StreamPayApp) RegisterTendermintService(clientCtx client.Context) {
 }
 
 // RegisterNodeService allows query minimum-gas-prices in app.toml
-func (app *StreamPayApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
+func (app *StreamPayApp) RegisterNodeService(clientCtx sdkclient.Context, cfg config.Config) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 }
 
@@ -805,8 +863,10 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName)
 	paramsKeeper.Subspace(crisistypes.ModuleName)
-	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
-	paramsKeeper.Subspace(ibcexported.ModuleName)
+	keyTable := ibcclienttypes.ParamKeyTable()
+	keyTable.RegisterParamSet(&ibcconnectiontypes.Params{})
+	paramsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())
+	paramsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
 	paramsKeeper.Subspace(streampaytypes.ModuleName)
 
 	return paramsKeeper
