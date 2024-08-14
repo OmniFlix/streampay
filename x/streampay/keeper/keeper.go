@@ -141,7 +141,8 @@ func (k Keeper) StopStreamPayment(ctx sdk.Context, streamId string, sender sdk.A
 	if !streamPayment.Cancellable {
 		return errorsmod.Wrapf(
 			sdkerrors.ErrUnauthorized,
-			fmt.Sprintf("stream payment %s is not cancellable", streamId),
+			"stream payment %s is not cancellable",
+			streamId,
 		)
 	}
 	if ctx.BlockTime().Unix() > streamPayment.EndTime.Unix() {

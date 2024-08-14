@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -34,7 +33,8 @@ func validateStreamAmount(amount sdk.Coin) error {
 	if !amount.IsValid() || amount.IsNil() || amount.Amount.LTE(sdkmath.ZeroInt()) {
 		return errorsmod.Wrapf(
 			ErrInvalidAmount,
-			fmt.Sprintf("amount %s is not valid", amount.String()),
+			"amount %s is not valid",
+			amount.String(),
 		)
 	}
 	return nil
@@ -44,7 +44,8 @@ func validateFeeAmount(amount sdk.Coin) error {
 	if !amount.IsValid() || amount.IsNil() || amount.Amount.LT(sdkmath.ZeroInt()) {
 		return errorsmod.Wrapf(
 			ErrInvalidAmount,
-			fmt.Sprintf("fee amount %s is not valid", amount.String()),
+			"fee amount %s is not valid",
+			amount.String(),
 		)
 	}
 	return nil
@@ -54,7 +55,8 @@ func validateStreamType(_type StreamType) error {
 	if !(_type == TypeDelayed || _type == TypeContinuous || _type == TypePeriodic) {
 		return errorsmod.Wrapf(
 			ErrInvalidStreamPaymentType,
-			fmt.Sprintf("stream payment type %s is not valid", _type),
+			"stream payment type %s is not valid",
+			_type,
 		)
 	}
 	return nil
