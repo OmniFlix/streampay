@@ -3,6 +3,8 @@ package keeper
 import (
 	"context"
 
+	sdkmath "cosmossdk.io/math"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	errorsmod "cosmossdk.io/errors"
@@ -53,11 +55,11 @@ func (m msgServer) StreamSend(goCtx context.Context, msg *types.MsgStreamSend) (
 	}
 
 	feePercentage := m.Keeper.GetStreamPaymentFeePercentage(ctx)
-	requiredFeeAmount := sdk.NewCoin(msg.Amount.Denom, sdk.NewDecFromInt(msg.Amount.Amount).Mul(feePercentage).TruncateInt())
+	requiredFeeAmount := sdk.NewCoin(msg.Amount.Denom, sdkmath.LegacyNewDecFromInt(msg.Amount.Amount).Mul(feePercentage).TruncateInt())
 	if !msg.PaymentFee.Equal(requiredFeeAmount) {
 		return nil, errorsmod.Wrap(types.ErrInvalidStreamPaymentFee, "fee coin didn't match with stream coin")
 	}
-	if requiredFeeAmount.Amount.GTE(sdk.NewInt(1)) {
+	if requiredFeeAmount.Amount.GTE(sdkmath.NewInt(1)) {
 		if err := m.distributionKeeper.FundCommunityPool(ctx, sdk.NewCoins(requiredFeeAmount), sender); err != nil {
 			return nil, err
 		}

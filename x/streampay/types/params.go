@@ -3,13 +3,14 @@ package types
 import (
 	"fmt"
 
+	sdkmath "cosmossdk.io/math"
+
 	errorsmod "cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var DefaultStreamPaymentFeePercentage = sdk.NewDecWithPrec(1, 2) // 1%
+var DefaultStreamPaymentFeePercentage = sdkmath.LegacyNewDecWithPrec(1, 2) // 1%
 
-func NewStreampayParams(streamPaymentFeePercentage sdk.Dec) Params {
+func NewStreampayParams(streamPaymentFeePercentage sdkmath.LegacyDec) Params {
 	return Params{
 		StreamPaymentFeePercentage: streamPaymentFeePercentage,
 	}
@@ -33,12 +34,12 @@ func (p Params) ValidateBasic() error {
 // validateStreamPaymentFee performs validation of stream payment fee
 
 func validateStreamPaymentFeePercentage(i interface{}) error {
-	fee, ok := i.(sdk.Dec)
+	fee, ok := i.(sdkmath.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if fee.IsNegative() || fee.GTE(sdk.OneDec()) {
+	if fee.IsNegative() || fee.GTE(sdkmath.LegacyOneDec()) {
 		return errorsmod.Wrapf(
 			ErrInvalidStreamPaymentFee,
 			"invalid fee percentage %s, only accepts value which is positive and less than 1.00",

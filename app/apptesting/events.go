@@ -4,8 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// AssertEventEmitted asserts that ctx's event manager has emitted the given number of events
-// of the given type.
+// AssertEventEmitted asserts that ctx's event manager has emitted the given number of events of the given type.
 func (s *KeeperTestHelper) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
 	allEvents := ctx.EventManager().Events()
 	// filter out other events

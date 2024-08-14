@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"math"
 
+	storetypes "cosmossdk.io/store/types"
+
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
@@ -61,7 +63,7 @@ func (k Keeper) RemoveStreamPayment(ctx sdk.Context, id string) {
 func (k Keeper) IterateStreamPayments(ctx sdk.Context, fn func(index int64, streamPayment types.StreamPayment) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.PrefixPaymentStreamId)
+	iterator := storetypes.KVStorePrefixIterator(store, types.PrefixPaymentStreamId)
 	defer iterator.Close()
 
 	i := int64(0)

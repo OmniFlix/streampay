@@ -12,7 +12,7 @@ option (gogoproto.goproto_getters_all) = false;
 message Params {
   string  stream_payment_fee_percentage = 1 [
     (gogoproto.moretags) = "yaml:\"stream_payment_fee_percentage\"",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
 }

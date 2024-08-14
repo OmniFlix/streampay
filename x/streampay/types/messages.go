@@ -72,11 +72,6 @@ func (msg MsgStreamSend) ValidateBasic() error {
 	return validateStreamType(msg.StreamType)
 }
 
-// GetSignBytes Implements Msg.
-func (msg *MsgStreamSend) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
 // GetSigners Implements Msg.
 func (msg MsgStreamSend) GetSigners() []sdk.AccAddress {
 	from, err := sdk.AccAddressFromBech32(msg.Sender)
@@ -103,11 +98,6 @@ func (msg MsgStopStream) ValidateBasic() error {
 		return err
 	}
 	return nil
-}
-
-// GetSignBytes Implements Msg.
-func (msg *MsgStopStream) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // GetSigners Implements Msg.
@@ -138,11 +128,6 @@ func (msg MsgClaimStreamedAmount) ValidateBasic() error {
 	return nil
 }
 
-// GetSignBytes Implements Msg.
-func (msg *MsgClaimStreamedAmount) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
-}
-
 // GetSigners Implements Msg.
 func (msg MsgClaimStreamedAmount) GetSigners() []sdk.AccAddress {
 	from, err := sdk.AccAddressFromBech32(msg.Claimer)
@@ -150,13 +135,6 @@ func (msg MsgClaimStreamedAmount) GetSigners() []sdk.AccAddress {
 		panic(err)
 	}
 	return []sdk.AccAddress{from}
-}
-
-// MsgUpdateParams
-
-// GetSignBytes implements the LegacyMsg interface.
-func (m MsgUpdateParams) GetSignBytes() []byte {
-	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
 }
 
 // GetSigners returns the expected signers for a MsgUpdateParams message.

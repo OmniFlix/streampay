@@ -2,18 +2,21 @@ package app
 
 import (
 	"encoding/json"
-	"testing"
+	"os"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/testutil/sims"
+
+	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	apphelpers "github.com/OmniFlix/streampay/v2/app/helpers"
-	appparams "github.com/OmniFlix/streampay/v2/app/params"
-	dbm "github.com/cometbft/cometbft-db"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
-	"github.com/cometbft/cometbft/libs/log"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
+	cosmosdb "github.com/cosmos/cosmos-db"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -21,12 +24,11 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/stretchr/testify/require"
 )
 
 // SimAppChainID hardcoded chainID for simulation
 const (
-	SimAppChainID = "streampay-app"
+	SimAppChainID = "streampay-1"
 )
 
 // EmptyBaseAppOptions is a stub implementing AppOptions
@@ -37,8 +39,7 @@ func (ao EmptyBaseAppOptions) Get(_ string) interface{} {
 	return nil
 }
 
-// DefaultConsensusParams defines the default Tendermint consensus params used
-// in streamPayApp testing.
+// DefaultConsensusParams defines the default Tendermint consensus params used in StreamPayApp testing.
 var DefaultConsensusParams = &tmproto.ConsensusParams{
 	Block: &tmproto.BlockParams{
 		MaxBytes: 200000,
@@ -60,144 +61,63 @@ type EmptyAppOptions struct{}
 
 func (EmptyAppOptions) Get(_ string) interface{} { return nil }
 
-func Setup(t *testing.T, _ bool, _ uint) *StreamPayApp {
-	t.Helper()
-
+// SetupWithGenesisValSet initializes a new StreamPayApp with a validator set and genesis accounts
+// that also act as delegators. For simplicity, each validator is bonded with a delegation
+// of one consensus engine unit in the default token of the StreamPayApp from first genesis
+// account. A Nop logger is set in StreamPayApp.
+func GenesisStateWithValSet(streamPayApp *StreamPayApp) GenesisState {
 	privVal := apphelpers.NewPV()
-	pubKey, err := privVal.GetPubKey()
-	require.NoError(t, err)
-	// create validator set with single validator
+	pubKey, _ := privVal.GetPubKey()
 	validator := tmtypes.NewValidator(pubKey, 1)
 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
 
 	// generate genesis account
 	senderPrivKey := secp256k1.GenPrivKey()
-	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
-	balance := banktypes.Balance{
-		Address: acc.GetAddress().String(),
-		Coins:   sdk.NewCoins(sdk.NewCoin(appparams.BondDenom, sdk.NewInt(100000000000000))),
-	}
+	senderPrivKey.PubKey().Address()
+	acc := authtypes.NewBaseAccountWithAddress(senderPrivKey.PubKey().Address().Bytes())
 
-	app := SetupWithGenesisValSet(t, valSet, []authtypes.GenesisAccount{acc}, balance)
-
-	return app
-}
-
-// SetupWithGenesisValSet initializes a new streamPayApp with a validator set and genesis accounts
-// that also act as delegators. For simplicity, each validator is bonded with a delegation
-// of one consensus engine unit in the default token of the streamPayApp from first genesis
-// account. A Nop logger is set in streamPayApp.
-func SetupWithGenesisValSet(
-	t *testing.T,
-	valSet *tmtypes.ValidatorSet,
-	genAccs []authtypes.GenesisAccount,
-	balances ...banktypes.Balance,
-) *StreamPayApp {
-	t.Helper()
-
-	streamPayApp, genesisState := setup(true, 5)
-	genesisState = genesisStateWithValSet(t, streamPayApp, genesisState, valSet, genAccs, balances...)
-
-	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
-	require.NoError(t, err)
-
-	// init chain will set the validator set and initialize the genesis accounts
-	streamPayApp.InitChain(
-		abci.RequestInitChain{
-			Validators:      []abci.ValidatorUpdate{},
-			ConsensusParams: DefaultConsensusParams,
-			AppStateBytes:   stateBytes,
-		},
-	)
-
-	// commit genesis changes
-	streamPayApp.Commit()
-	streamPayApp.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
-		Height:             streamPayApp.LastBlockHeight() + 1,
-		AppHash:            streamPayApp.LastCommitID().Hash,
-		ValidatorsHash:     valSet.Hash(),
-		NextValidatorsHash: valSet.Hash(),
-	}})
-
-	return streamPayApp
-}
-
-func setup(withGenesis bool, invCheckPeriod uint) (*StreamPayApp, GenesisState) {
-	db := dbm.NewMemDB()
-	encCdc := MakeEncodingConfig()
-
-	app := NewStreamPayApp(
-		log.NewNopLogger(),
-		db,
-		nil,
-		true,
-		map[int64]bool{},
-		DefaultNodeHome,
-		invCheckPeriod,
-		encCdc,
-		EmptyBaseAppOptions{},
-	)
-	if withGenesis {
-		return app, NewDefaultGenesisState(encCdc.Marshaler)
-	}
-
-	return app, GenesisState{}
-}
-
-func genesisStateWithValSet(
-	t *testing.T,
-	app *StreamPayApp,
-	genesisState GenesisState,
-	valSet *tmtypes.ValidatorSet,
-	genAccs []authtypes.GenesisAccount,
-	balances ...banktypes.Balance,
-) GenesisState {
-	t.Helper()
-	// set genesis accounts
+	//////////////////////
+	balances := []banktypes.Balance{}
+	genesisState := NewDefaultGenesisState()
+	genAccs := []authtypes.GenesisAccount{acc}
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
-	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
+	genesisState[authtypes.ModuleName] = encodingConfig.Marshaler.MustMarshalJSON(authGenesis)
 
 	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
 	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
 
 	bondAmt := sdk.DefaultPowerReduction
+	initValPowers := []abci.ValidatorUpdate{}
 
 	for _, val := range valSet.Validators {
-		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
-		require.NoError(t, err)
-		pkAny, err := codectypes.NewAnyWithValue(pk)
-		require.NoError(t, err)
+		pk, _ := cryptocodec.FromCmtPubKeyInterface(val.PubKey)
+		pkAny, _ := codectypes.NewAnyWithValue(pk)
 		validator := stakingtypes.Validator{
 			OperatorAddress:   sdk.ValAddress(val.Address).String(),
 			ConsensusPubkey:   pkAny,
 			Jailed:            false,
 			Status:            stakingtypes.Bonded,
 			Tokens:            bondAmt,
-			DelegatorShares:   sdk.OneDec(),
+			DelegatorShares:   sdkmath.LegacyOneDec(),
 			Description:       stakingtypes.Description{},
 			UnbondingHeight:   int64(0),
 			UnbondingTime:     time.Unix(0, 0).UTC(),
-			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
-			MinSelfDelegation: sdk.ZeroInt(),
+			Commission:        stakingtypes.NewCommission(sdkmath.LegacyZeroDec(), sdkmath.LegacyZeroDec(), sdkmath.LegacyZeroDec()),
+			MinSelfDelegation: sdkmath.ZeroInt(),
 		}
 		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress().String(), sdk.ValAddress(val.Address).String(), sdkmath.LegacyOneDec()))
 
+		// add initial validator powers so consumer InitGenesis runs correctly
+		pub, _ := val.ToProto()
+		initValPowers = append(initValPowers, abci.ValidatorUpdate{
+			Power:  val.VotingPower,
+			PubKey: pub.PubKey,
+		})
 	}
 	// set validators and delegations
-	defaultStParams := stakingtypes.DefaultParams()
-	stParams := stakingtypes.NewParams(
-		defaultStParams.UnbondingTime,
-		defaultStParams.MaxValidators,
-		defaultStParams.MaxEntries,
-		defaultStParams.HistoricalEntries,
-		appparams.BondDenom,
-		defaultStParams.MinCommissionRate,
-	)
-
-	// set validators and delegations
-	stakingGenesis := stakingtypes.NewGenesisState(stParams, validators, delegations)
-	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(stakingGenesis)
+	stakingGenesis := stakingtypes.NewGenesisState(stakingtypes.DefaultParams(), validators, delegations)
+	genesisState[stakingtypes.ModuleName] = encodingConfig.Marshaler.MustMarshalJSON(stakingGenesis)
 
 	totalSupply := sdk.NewCoins()
 	for _, b := range balances {
@@ -207,13 +127,13 @@ func genesisStateWithValSet(
 
 	for range delegations {
 		// add delegated tokens to total supply
-		totalSupply = totalSupply.Add(sdk.NewCoin(appparams.BondDenom, bondAmt))
+		totalSupply = totalSupply.Add(sdk.NewCoin(sdk.DefaultBondDenom, bondAmt))
 	}
 
 	// add bonded amount to bonded pool module account
 	balances = append(balances, banktypes.Balance{
 		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(appparams.BondDenom, bondAmt)},
+		Coins:   sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, bondAmt)},
 	})
 
 	// update total supply
@@ -224,10 +144,107 @@ func genesisStateWithValSet(
 		[]banktypes.Metadata{},
 		[]banktypes.SendEnabled{},
 	)
+	genesisState[banktypes.ModuleName] = encodingConfig.Marshaler.MustMarshalJSON(bankGenesis)
 
-	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
+	_, err := tmtypes.PB2TM.ValidatorUpdates(initValPowers)
+	if err != nil {
+		panic("failed to get vals")
+	}
 
 	return genesisState
+}
+
+var defaultGenesisStatebytes = []byte{}
+
+// SetupWithCustomHome initializes a new StreamPayApp with a custom home directory
+func SetupWithCustomHome(isCheckTx bool, dir string) *StreamPayApp {
+	return SetupWithCustomHomeAndChainId(isCheckTx, dir, "streampay-1")
+}
+
+func SetupWithCustomHomeAndChainId(isCheckTx bool, dir, chainId string) *StreamPayApp {
+	db := cosmosdb.NewMemDB()
+	app := NewStreamPayApp(
+		log.NewNopLogger(),
+		db,
+		nil,
+		true,
+		map[int64]bool{},
+		dir,
+		0,
+		encodingConfig,
+		sims.EmptyAppOptions{},
+		baseapp.SetChainID(chainId))
+	if !isCheckTx {
+		if len(defaultGenesisStatebytes) == 0 {
+			var err error
+			genesisState := GenesisStateWithValSet(app)
+			defaultGenesisStatebytes, err = json.Marshal(genesisState)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		_, err := app.InitChain(
+			&abci.RequestInitChain{
+				Validators:      []abci.ValidatorUpdate{},
+				ConsensusParams: sims.DefaultConsensusParams,
+				AppStateBytes:   defaultGenesisStatebytes,
+				ChainId:         chainId,
+			},
+		)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return app
+}
+
+func Setup(isCheckTx bool) *StreamPayApp {
+	return SetupWithCustomHome(isCheckTx, DefaultNodeHome)
+}
+
+// SetupTestingAppWithLevelDb initializes a new StreamPayApp intended for testing,
+// with LevelDB as a db.
+func SetupTestingAppWithLevelDb(isCheckTx bool) (app *StreamPayApp, cleanupFn func()) {
+	dir, err := os.MkdirTemp(os.TempDir(), "streampay_leveldb_testing")
+	if err != nil {
+		panic(err)
+	}
+	db, err := cosmosdb.NewGoLevelDB("streampay_leveldb_testing", dir, nil)
+	if err != nil {
+		panic(err)
+	}
+	app = NewStreamPayApp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, DefaultNodeHome, 5, encodingConfig, sims.EmptyAppOptions{}, baseapp.SetChainID("streampay-1"))
+	if !isCheckTx {
+		genesisState := GenesisStateWithValSet(app)
+		stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = app.InitChain(
+			&abci.RequestInitChain{
+				Validators:      []abci.ValidatorUpdate{},
+				ConsensusParams: sims.DefaultConsensusParams,
+				AppStateBytes:   stateBytes,
+				ChainId:         "streampay-1",
+			},
+		)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	cleanupFn = func() {
+		db.Close()
+		err = os.RemoveAll(dir)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return app, cleanupFn
 }
 
 func keyPubAddr() (crypto.PrivKey, crypto.PubKey, sdk.AccAddress) {

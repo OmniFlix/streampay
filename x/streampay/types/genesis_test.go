@@ -3,6 +3,8 @@ package types_test
 import (
 	"testing"
 
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -39,7 +41,7 @@ func TestGenesisState_Validate(t *testing.T) {
 						Recipient:      addr2.String(),
 						StreamType:     types.TypeDelayed,
 						TotalAmount:    defaultAmount,
-						StreamedAmount: sdk.NewCoin(defaultAmount.Denom, sdk.ZeroInt()),
+						StreamedAmount: sdk.NewCoin(defaultAmount.Denom, sdkmath.ZeroInt()),
 					},
 					{
 						Id:             "sp2",
@@ -47,7 +49,7 @@ func TestGenesisState_Validate(t *testing.T) {
 						Recipient:      addr2.String(),
 						StreamType:     types.TypeContinuous,
 						TotalAmount:    defaultAmount,
-						StreamedAmount: sdk.NewCoin(defaultAmount.Denom, sdk.ZeroInt()),
+						StreamedAmount: sdk.NewCoin(defaultAmount.Denom, sdkmath.ZeroInt()),
 					},
 				},
 				NextStreamPaymentNumber: 3,

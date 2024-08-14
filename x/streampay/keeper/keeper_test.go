@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"testing"
 
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/OmniFlix/streampay/v2/app/apptesting"
 	"github.com/OmniFlix/streampay/v2/x/streampay/keeper"
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
@@ -25,7 +27,7 @@ func TestKeeperTestSuite(t *testing.T) {
 func (suite *KeeperTestSuite) SetupTest() {
 	suite.Setup()
 	fundAccsAmount := sdk.NewCoins(
-		sdk.NewCoin("uspay", sdk.NewInt(10_000_000_000)),
+		sdk.NewCoin("uspay", sdkmath.NewInt(10_000_000_000)),
 	)
 	for _, acc := range suite.TestAccs {
 		suite.FundAcc(acc, fundAccsAmount)
@@ -37,7 +39,7 @@ func (suite *KeeperTestSuite) SetupTest() {
 }
 
 func (suite *KeeperTestSuite) CreateDefaultStreamPayment(cancellable bool) {
-	ctx := sdk.WrapSDKContext(suite.Ctx)
+	ctx := suite.Ctx
 	res, _ := suite.msgServer.StreamSend(ctx, &types.MsgStreamSend{
 		Sender:      suite.TestAccs[0].String(),
 		Recipient:   suite.TestAccs[1].String(),
@@ -52,7 +54,7 @@ func (suite *KeeperTestSuite) CreateDefaultStreamPayment(cancellable bool) {
 }
 
 func (suite *KeeperTestSuite) CreateStreamPayment(streamType types.StreamType, cancellable bool) string {
-	ctx := sdk.WrapSDKContext(suite.Ctx)
+	ctx := suite.Ctx
 	res, _ := suite.msgServer.StreamSend(ctx, &types.MsgStreamSend{
 		Sender:      suite.TestAccs[0].String(),
 		Recipient:   suite.TestAccs[1].String(),
@@ -75,14 +77,14 @@ func (suite *KeeperTestSuite) TestParams() {
 		{
 			name: "set invalid fee",
 			input: types.Params{
-				StreamPaymentFeePercentage: sdk.NewDec(1),
+				StreamPaymentFeePercentage: sdkmath.LegacyNewDec(1),
 			},
 			expectErr: true,
 		},
 		{
 			name: "set invalid fee",
 			input: types.Params{
-				StreamPaymentFeePercentage: sdk.NewDec(-1),
+				StreamPaymentFeePercentage: sdkmath.LegacyNewDec(-1),
 			},
 			expectErr: true,
 		},

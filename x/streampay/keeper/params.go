@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	sdkmath "cosmossdk.io/math"
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -31,7 +32,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) error {
 }
 
 // GetStreamPaymentFeePercentage returns the current stream payment fee.
-func (k Keeper) GetStreamPaymentFeePercentage(ctx sdk.Context) sdk.Dec {
+func (k Keeper) GetStreamPaymentFeePercentage(ctx sdk.Context) sdkmath.LegacyDec {
 	params := k.GetParams(ctx)
 	return params.StreamPaymentFeePercentage
 }

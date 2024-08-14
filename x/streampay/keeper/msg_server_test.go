@@ -3,6 +3,8 @@ package keeper_test
 import (
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/OmniFlix/streampay/v2/x/streampay/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -65,14 +67,14 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			duration:              time.Second * 100,
 			periods:               nil,
 			cancellable:           false,
-			paymentFee:            sdk.Coin{Denom: "", Amount: sdk.NewInt(-1)},
+			paymentFee:            sdk.Coin{Denom: "", Amount: sdkmath.NewInt(-1)},
 			valid:                 false,
 			expectedMessageEvents: 0,
 		},
 		{
 			sender:                suite.TestAccs[0].String(),
 			recipient:             suite.TestAccs[1].String(),
-			amount:                sdk.Coin{Denom: "", Amount: sdk.NewInt(-1)},
+			amount:                sdk.Coin{Denom: "", Amount: sdkmath.NewInt(-1)},
 			streamType:            types.TypeContinuous,
 			duration:              time.Second * 100,
 			periods:               nil,
@@ -217,7 +219,7 @@ func (suite *KeeperTestSuite) TestStreamSendMsg() {
 			err := msg.ValidateBasic()
 			if err == nil {
 				_, err = suite.msgServer.StreamSend(
-					sdk.WrapSDKContext(ctx),
+					ctx,
 					msg,
 				)
 			}
@@ -264,7 +266,7 @@ func (suite *KeeperTestSuite) TestStopStreamMsg() {
 			suite.Require().Equal(0, len(ctx.EventManager().Events()))
 			// Test stream send message
 			_, err := suite.msgServer.StopStream(
-				sdk.WrapSDKContext(ctx),
+				ctx,
 				types.NewMsgStopStream(
 					tc.streamId,
 					tc.sender,
@@ -306,7 +308,7 @@ func (suite *KeeperTestSuite) TestClaimStreamedAmountMsg() {
 			suite.Require().Equal(0, len(ctx.EventManager().Events()))
 			// Test stream send message
 			_, err := suite.msgServer.ClaimStreamedAmount(
-				sdk.WrapSDKContext(ctx),
+				ctx,
 				types.NewMsgClaimStreamedAmount(
 					tc.streamId,
 					tc.recipient,
@@ -339,7 +341,7 @@ func (suite *KeeperTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: suite.App.StreamPayKeeper.GetAuthority(),
 				Params: types.Params{
-					StreamPaymentFeePercentage: sdk.NewDec(1),
+					StreamPaymentFeePercentage: sdkmath.LegacyNewDec(1),
 				},
 			},
 			expectErr: true,
@@ -349,7 +351,7 @@ func (suite *KeeperTestSuite) TestUpdateParams() {
 			request: &types.MsgUpdateParams{
 				Authority: suite.App.StreamPayKeeper.GetAuthority(),
 				Params: types.Params{
-					StreamPaymentFeePercentage: sdk.NewDecWithPrec(-5, 2),
+					StreamPaymentFeePercentage: sdkmath.LegacyNewDecWithPrec(-5, 2),
 				},
 			},
 			expectErr: true,
